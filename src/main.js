@@ -10,7 +10,8 @@ initLang();
 
 const canvas = document.getElementById('game');
 const game = new Game();
-const renderer = new Renderer(canvas);
+// ?kai=a|b|c|d previews the Kai options (see src/kai.js)
+const renderer = new Renderer(canvas, new URLSearchParams(location.search).get('kai'));
 const audio = new AudioEngine();
 const ui = createUI(renderer.sprites, audio);
 

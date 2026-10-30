@@ -1,16 +1,21 @@
 // ===========================================================================
 //  KAI — edit this file to make him look like the real Kai!
-//  Change the colors in KAI_LOOK (hair, skin, hat, jacket...). The shapes are
-//  drawn in drawKai() below; every line says which part it paints.
-//  Kai faces the player, riding down the hill on his sled. ~32 x 42 px.
+//  KAI_LOOKS holds the colors and style of each option. The shapes are drawn
+//  in drawKai() below; every block says which part it paints.
+//  Kai faces the player, riding down the hill on his sled. ~34 x 46 px.
+//  Try an option in the game with  ?kai=a  ?kai=b  ?kai=c  ?kai=d  in the URL.
 // ===========================================================================
-import { Pix, lighten, outlineOf } from './pixart.js';
+import { Pix, lighten } from './pixart.js';
 
-export const KAI_LOOK = {
-  skin: '#f6c9a2',
-  hair: '#7a4a2a',
-  eyes: '#2b1d3f',
-  cheeks: '#f08a8a',
+// Features taken from the real Kai: dark brown hair with a side-swept fringe
+// (longer on his left), thick eyebrows, big dark brown eyes, ears that peek
+// out, warm skin, and a smile with teeth.
+const BASE = {
+  skin: '#e8b48e',
+  skinDark: '#cf9672',
+  hair: '#5a4434',
+  eyes: '#2e1a10',
+  cheeks: '#ee9a86',
   hat: '#e2323f',
   hatTrim: '#fffaf0',
   scarf: '#ffd23f',
@@ -21,16 +26,34 @@ export const KAI_LOOK = {
   sled: '#c9453a',
   sledTrim: '#ffd23f',
   runner: '#6b4a38',
+  hatStyle: 'low', // 'low' = pulled over the forehead, 'back' = pushed back, more hair
 };
 
+export const KAI_LOOKS = {
+  // A: hat pushed back so the fringe shows, blue jacket + yellow scarf
+  a: { ...BASE, hatStyle: 'back' },
+  // B: hat pulled low, only a bit of fringe peeking out, blue jacket + yellow scarf
+  b: { ...BASE, hatStyle: 'low' },
+  // C: hat pushed back, plum sweatshirt with a white collar (his real sweater)
+  c: { ...BASE, hatStyle: 'back', jacket: '#8c5a64', scarf: '#f6f1e6' },
+  // D: hat pulled low, plum sweatshirt, red scarf
+  d: { ...BASE, hatStyle: 'low', jacket: '#8c5a64', scarf: '#d93a48' },
+};
+export const DEFAULT_LOOK = 'a';
+
+export function getLook(name) {
+  return KAI_LOOKS[name] || KAI_LOOKS[DEFAULT_LOOK];
+}
+
 // mode: 'normal' | 'star' (golden) | 'hurt' (ouch face)
-export function drawKai(mode = 'normal') {
-  const L = { ...KAI_LOOK };
+export function drawKai(mode = 'normal', look = KAI_LOOKS[DEFAULT_LOOK]) {
+  const L = { ...look };
   if (mode === 'star') {
     Object.assign(L, { hat: '#ffd23f', jacket: '#ffe88a', pants: '#ffb92e', scarf: '#ffffff', mittens: '#ffd23f', sled: '#ffd23f', sledTrim: '#ffffff' });
   }
-  const p = new Pix(34, 44);
-  const ox = 1; const oy = 1; // room for the outline
+  const back = L.hatStyle === 'back';
+  const p = new Pix(34, 46);
+  const ox = 1; const oy = 2; // room for the outline and the hat
 
   // --- sled runners (curl up at the front) ---
   p.box(ox + 2, oy + 24, 4, 16, L.runner, { round: 1 });
@@ -48,59 +71,79 @@ export function drawKai(mode = 'normal') {
   p.box(ox + 8, oy + 33, 7, 5, L.boots, { round: 2 });
   p.box(ox + 17, oy + 33, 7, 5, L.boots, { round: 2 });
 
-  // --- body (jacket) ---
+  // --- body (jacket / sweatshirt), arms and mittens holding the sled ---
   p.blob(ox + 16, oy + 24, 8, 6, L.jacket);
-  // --- arms and mittens, holding the sled sides ---
   p.blob(ox + 8, oy + 25, 3, 4, L.jacket);
   p.blob(ox + 24, oy + 25, 3, 4, L.jacket);
   p.blob(ox + 6, oy + 29, 2.5, 2.5, L.mittens);
   p.blob(ox + 26, oy + 29, 2.5, 2.5, L.mittens);
 
-  // --- scarf, with a tail flapping to one side ---
+  // --- scarf / collar, with a tail flapping to one side ---
   p.box(ox + 20, oy + 21, 4, 8, L.scarf, { round: 1 });
   p.blob(ox + 16, oy + 21, 8, 2.6, L.scarf);
 
+  // --- ears (they peek out on both sides, like his) ---
+  p.blob(ox + 5.5, oy + 14.5, 2, 2.6, L.skin, { dark: L.skinDark });
+  p.blob(ox + 26.5, oy + 14.5, 2, 2.6, L.skin, { dark: L.skinDark });
+
   // --- head ---
-  p.blob(ox + 16, oy + 13, 10, 8.5, L.skin, { dark: '#e5a583' });
-  // hair: small side tufts, visible next to the face
-  p.blob(ox + 6.5, oy + 13, 2.5, 3.2, L.hair);
-  p.blob(ox + 25.5, oy + 13, 2.5, 3.2, L.hair);
+  p.blob(ox + 16, oy + 13, 10, 8.5, L.skin, { dark: L.skinDark });
+
+  // --- hair: short sides, and a fringe swept toward his left (longer there) ---
+  p.blob(ox + 7.2, oy + 10.5, 2.4, 4, L.hair, { line: false });
+  p.blob(ox + 24.8, oy + 10.5, 2.4, 4, L.hair, { line: false });
+  const top = back ? 6 : 9;
+  p.poly([
+    [ox + 7, oy + top], [ox + 25, oy + top], [ox + 25.5, oy + 13.5], [ox + 22, oy + 12.2],
+    [ox + 18, oy + 11.4], [ox + 13, oy + 10.8], [ox + 9, oy + 10.2],
+  ], L.hair, { line: false, shade: false });
+  // a few lighter strands
+  [[13, 10], [17, 10], [21, 11]].forEach(([x, y]) => p.set(ox + x, oy + y, lighten(L.hair, 0.28)));
 
   // --- face ---
+  const browC = '#3d2b20';
   if (mode === 'hurt') {
-    // >  <  eyes and a little "o" mouth
-    [[11, 11, 1], [20, 11, -1]].forEach(([x, y, d]) => {
+    // thick brows, > < eyes and an "o" mouth
+    p.rect(ox + 9, oy + 11, 4, 1, browC); p.rect(ox + 19, oy + 11, 4, 1, browC);
+    [[10, 13, 1], [21, 13, -1]].forEach(([x, y, d]) => {
       p.set(ox + x, oy + y, L.eyes); p.set(ox + x + d, oy + y + 1, L.eyes); p.set(ox + x, oy + y + 2, L.eyes);
       p.set(ox + x + d * 2, oy + y + 1, L.eyes);
     });
-    p.rect(ox + 15, oy + 18, 3, 2, '#8f2a3a');
-    p.set(ox + 16, oy + 18, '#d9606e');
+    p.rect(ox + 15, oy + 19, 3, 2, '#8f2a3a');
+    p.set(ox + 16, oy + 19, '#d9606e');
   } else {
-    // big eyes with a shine (Minish-style)
-    [11, 20].forEach((x) => {
-      p.rect(ox + x, oy + 11, 3, 4, L.eyes);
-      p.set(ox + x, oy + 11, '#ffffff');
-      p.set(ox + x + 1, oy + 14, lighten(L.eyes, 0.35));
+    // thick eyebrows
+    p.rect(ox + 9, oy + 11, 4, 1, browC);
+    p.rect(ox + 19, oy + 11, 4, 1, browC);
+    p.set(ox + 13, oy + 11, L.skinDark); p.set(ox + 18, oy + 11, L.skinDark);
+    // big dark eyes with a shine
+    [10, 19].forEach((x) => {
+      p.rect(ox + x, oy + 13, 3, 3, L.eyes);
+      p.set(ox + x, oy + 13, '#ffffff');
+      p.set(ox + x + 2, oy + 15, lighten(L.eyes, 0.3));
     });
-    // smile
-    p.set(ox + 14, oy + 18, '#9a3b4a');
-    p.rect(ox + 15, oy + 19, 3, 1, '#9a3b4a');
-    p.set(ox + 18, oy + 18, '#9a3b4a');
+    // smile with teeth
+    p.rect(ox + 13, oy + 19, 6, 1, '#ffffff');
+    p.rect(ox + 14, oy + 20, 4, 1, '#b4535e');
+    p.set(ox + 12, oy + 19, '#9a3b4a');
+    p.set(ox + 19, oy + 19, '#9a3b4a');
   }
-  // rosy cheeks
-  p.rect(ox + 9, oy + 17, 2, 2, L.cheeks);
-  p.rect(ox + 23, oy + 17, 2, 2, L.cheeks);
+  p.rect(ox + 15, oy + 17, 2, 1, L.skinDark); // nose
+  p.rect(ox + 8, oy + 18, 2, 1, L.cheeks);   // cheeks
+  p.rect(ox + 23, oy + 18, 2, 1, L.cheeks);
 
   // --- hat: dome, droopy tip with pom-pom, fur band ---
-  p.blob(ox + 16, oy + 5.5, 10, 5, L.hat);
-  p.blob(ox + 24, oy + 3, 4, 3, L.hat);
-  p.blob(ox + 29, oy + 5, 3, 3, L.hatTrim);
-  p.blob(ox + 16, oy + 8, 11, 2.2, L.hatTrim, { dark: '#d9d3e6' });
-  // fringe of hair peeking out under the fur band
-  p.blob(ox + 12.5, oy + 10, 3, 1.2, L.hair, { line: false });
-  p.blob(ox + 19.5, oy + 10, 3, 1.2, L.hair, { line: false });
+  if (back) {
+    p.blob(ox + 16, oy + 3, 10, 4.8, L.hat);
+    p.blob(ox + 25, oy + 1.5, 4, 3, L.hat);
+    p.blob(ox + 30, oy + 3.5, 3, 3, L.hatTrim);
+    p.blob(ox + 16, oy + 5.6, 11, 2.1, L.hatTrim, { dark: '#d9d3e6' });
+  } else {
+    p.blob(ox + 16, oy + 5.5, 10, 5, L.hat);
+    p.blob(ox + 24, oy + 3, 4, 3, L.hat);
+    p.blob(ox + 29, oy + 5, 3, 3, L.hatTrim);
+    p.blob(ox + 16, oy + 8, 11, 2.2, L.hatTrim, { dark: '#d9d3e6' });
+  }
 
   return p.outlined();
 }
-
-export const kaiOutline = outlineOf;

@@ -23,10 +23,10 @@ const canvas = (w, h) => {
 };
 
 export class Renderer {
-  constructor(el) {
+  constructor(el, kaiLook) {
     this.el = el;
     this.ctx = el.getContext('2d');
-    this.sprites = buildSprites();
+    this.sprites = buildSprites(kaiLook);
   }
 
   resize(geo) {
