@@ -47,6 +47,7 @@ export class Game {
     this.objects = [];
     this.speed = this.speed || DEMO_SPEED;
     this.starTime = 0;
+    this.happyTime = 0;
     this.shake = 0;
     this.flash = 0;
     this.deadTimer = 0;
@@ -146,6 +147,7 @@ export class Game {
     this.objects = this.objects.filter((o) => o.y > -40 && !o.dead);
 
     this.starTime = Math.max(0, this.starTime - dt);
+    this.happyTime = Math.max(0, this.happyTime - dt);
     this.shake = Math.max(0, this.shake - dt);
     this.flash = Math.max(0, this.flash - dt);
 
@@ -199,6 +201,7 @@ export class Game {
       case 'gift':
         o.dead = true;
         this.gifts++;
+        this.happyTime = 0.6; // Kai's eyes turn happy for a moment
         this.burst(o.x, o.y, ['#ffd23f', '#fbfdff', '#ff8c2a'], 8, 40);
         this.emit('gift');
         break;

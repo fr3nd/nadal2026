@@ -124,7 +124,9 @@ export function buildPix() {
   const darkForest = { green: '#1f6b4c', snow: '#cfe0ff', trunk: '#5a3b2a' };
   return {
     kai: drawKai('normal'),
+    kaiHappy: drawKai('normal', undefined, 'happy'),
     kaiStar: drawKai('star'),
+    kaiStarHappy: drawKai('star', undefined, 'happy'),
     kaiHurt: drawKai('hurt'),
     pine: pine(),
     snowman: snowman(),

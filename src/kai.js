@@ -25,6 +25,7 @@ const BASE = {
   sled: '#c9453a',
   sledTrim: '#ffd23f',
   runner: '#6b4a38',
+  eyeStyle: 'oval', // 'oval' | 'happy'
   hatStyle: 'low', // 'low' = pulled over the forehead, 'back' = pushed back, more hair
 };
 
@@ -35,9 +36,26 @@ export const KAI_LOOK = {
   scarf: '#d93a48',
 };
 
+// Two eye looks: tall ovals normally, and happy closed arcs for a moment when
+// he grabs a gift ('happy'). Each draws both eyes.
+function paintEyes(p, ox, oy, style, L) {
+  const D = L.eyes;
+  const px = (x, y, c) => p.set(ox + x, oy + y, c);
+  [[11, -1], [18, 1]].forEach(([x, side]) => { // side: -1 left eye, +1 right eye
+    if (style === 'happy') {
+      px(x, 15, D); px(x, 14, D); px(x + 1, 13, D); px(x + 2, 14, D); px(x + 2, 15, D);
+    } else { // 'oval': tall bean-shaped eyes with a shine
+      const ex = x + (side < 0 ? 0 : 1);
+      p.rect(ox + ex, oy + 13, 2, 4, D);
+      px(ex, 13, '#ffffff');
+    }
+  });
+}
+
 // mode: 'normal' | 'star' (golden) | 'hurt' (ouch face)
-export function drawKai(mode = 'normal', look = KAI_LOOK) {
+export function drawKai(mode = 'normal', look = KAI_LOOK, eyeStyle = null) {
   const L = { ...look };
+  if (eyeStyle) L.eyeStyle = eyeStyle;
   if (mode === 'star') {
     Object.assign(L, { hat: '#ffd23f', jacket: '#ffe88a', pants: '#ffb92e', scarf: '#ffffff', mittens: '#ffd23f', sled: '#ffd23f', sledTrim: '#ffffff' });
   }
@@ -106,12 +124,7 @@ export function drawKai(mode = 'normal', look = KAI_LOOK) {
     p.rect(ox + 10, oy + 11, 4, 1, browC);
     p.rect(ox + 18, oy + 11, 4, 1, browC);
     p.set(ox + 14, oy + 11, L.skinDark); p.set(ox + 17, oy + 11, L.skinDark);
-    // big dark eyes with a shine
-    [11, 18].forEach((x) => {
-      p.rect(ox + x, oy + 13, 3, 3, L.eyes);
-      p.set(ox + x, oy + 13, '#ffffff');
-      p.set(ox + x + 2, oy + 15, lighten(L.eyes, 0.3));
-    });
+    paintEyes(p, ox, oy, L.eyeStyle, L);
     // smile with teeth
     p.rect(ox + 13, oy + 19, 6, 1, '#ffffff');
     p.rect(ox + 14, oy + 20, 4, 1, '#b4535e');

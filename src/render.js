@@ -196,7 +196,8 @@ export class Renderer {
     // blink between normal and golden; in its last 1.5 s it flickers faster
     const ending = star && game.starTime < 1.5;
     const gold = star && (ending ? Math.floor(now * 12) % 2 === 0 : Math.floor(now * 8) % 4 !== 0);
-    let img = gold ? S.kaiStar : S.kai;
+    const happy = game.happyTime > 0;
+    let img = gold ? (happy ? S.kaiStarHappy : S.kaiStar) : (happy ? S.kaiHappy : S.kai);
     if (dead) img = S.kaiHurt;
     this.sprite(img, k.x, k.y);
 
