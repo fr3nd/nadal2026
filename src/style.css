@@ -89,18 +89,19 @@ img { image-rendering: pixelated; pointer-events: none; }
 #hud.hidden { opacity: 0; }
 .hud-panel {
   display: inline-flex;
-  flex-direction: column;
-  gap: calc(var(--u) * 1);
-  padding: calc(var(--u) * 2) calc(var(--u) * 3.5);
+  flex-direction: row;
+  align-items: center;
+  gap: calc(var(--u) * 4);
+  padding: calc(var(--u) * 1.6) calc(var(--u) * 3.5);
   background: rgba(20, 24, 63, 0.72);
   border: 3px solid var(--cream);
   border-radius: 10px;
   box-shadow: 0 0 0 2px var(--ink);
 }
-.stat { display: flex; align-items: center; gap: calc(var(--u) * 2); color: var(--cream); min-width: calc(var(--u) * 22); }
+.stat { display: flex; align-items: center; gap: calc(var(--u) * 1.8); color: var(--cream); min-width: calc(var(--u) * 11); }
 .stat small { font-size: 0.7em; margin-left: -0.2em; color: var(--cream-dark); }
 .stat img { width: calc(var(--u) * 5.5); height: auto; }
-.stat:last-child { padding-left: calc(var(--u) * 0.5); }
+.stat:last-child { min-width: calc(var(--u) * 15); }
 
 .icon-btn {
   position: absolute;

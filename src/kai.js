@@ -83,29 +83,29 @@ export function drawKai(mode = 'normal', look = KAI_LOOKS[DEFAULT_LOOK]) {
   p.blob(ox + 16, oy + 21, 8, 2.6, L.scarf);
 
   // --- ears (they peek out on both sides, like his) ---
-  p.blob(ox + 5.5, oy + 14.5, 2, 2.6, L.skin, { dark: L.skinDark });
-  p.blob(ox + 26.5, oy + 14.5, 2, 2.6, L.skin, { dark: L.skinDark });
+  p.blob(ox + 7, oy + 14.5, 2, 2.6, L.skin, { dark: L.skinDark });
+  p.blob(ox + 25, oy + 14.5, 2, 2.6, L.skin, { dark: L.skinDark });
 
   // --- head ---
-  p.blob(ox + 16, oy + 13, 10, 8.5, L.skin, { dark: L.skinDark });
+  p.blob(ox + 16, oy + 13, 9, 9, L.skin, { dark: L.skinDark });
 
   // --- hair: short sides, and a fringe swept toward his left (longer there) ---
-  p.blob(ox + 7.2, oy + 10.5, 2.4, 4, L.hair, { line: false });
-  p.blob(ox + 24.8, oy + 10.5, 2.4, 4, L.hair, { line: false });
+  p.blob(ox + 8.4, oy + 10.5, 2.3, 4, L.hair, { line: false });
+  p.blob(ox + 23.6, oy + 10.5, 2.3, 4, L.hair, { line: false });
   const top = back ? 6 : 9;
   p.poly([
-    [ox + 7, oy + top], [ox + 25, oy + top], [ox + 25.5, oy + 13.5], [ox + 22, oy + 12.2],
-    [ox + 18, oy + 11.4], [ox + 13, oy + 10.8], [ox + 9, oy + 10.2],
+    [ox + 8, oy + top], [ox + 24, oy + top], [ox + 24.5, oy + 13.5], [ox + 21.5, oy + 12.2],
+    [ox + 18, oy + 11.4], [ox + 13, oy + 10.8], [ox + 9.5, oy + 10.2],
   ], L.hair, { line: false, shade: false });
   // a few lighter strands
-  [[13, 10], [17, 10], [21, 11]].forEach(([x, y]) => p.set(ox + x, oy + y, lighten(L.hair, 0.28)));
+  [[13, 10], [16, 10], [20, 11]].forEach(([x, y]) => p.set(ox + x, oy + y, lighten(L.hair, 0.28)));
 
   // --- face ---
   const browC = '#3d2b20';
   if (mode === 'hurt') {
     // thick brows, > < eyes and an "o" mouth
-    p.rect(ox + 9, oy + 11, 4, 1, browC); p.rect(ox + 19, oy + 11, 4, 1, browC);
-    [[10, 13, 1], [21, 13, -1]].forEach(([x, y, d]) => {
+    p.rect(ox + 10, oy + 11, 4, 1, browC); p.rect(ox + 18, oy + 11, 4, 1, browC);
+    [[11, 13, 1], [20, 13, -1]].forEach(([x, y, d]) => {
       p.set(ox + x, oy + y, L.eyes); p.set(ox + x + d, oy + y + 1, L.eyes); p.set(ox + x, oy + y + 2, L.eyes);
       p.set(ox + x + d * 2, oy + y + 1, L.eyes);
     });
@@ -113,11 +113,11 @@ export function drawKai(mode = 'normal', look = KAI_LOOKS[DEFAULT_LOOK]) {
     p.set(ox + 16, oy + 19, '#d9606e');
   } else {
     // thick eyebrows
-    p.rect(ox + 9, oy + 11, 4, 1, browC);
-    p.rect(ox + 19, oy + 11, 4, 1, browC);
-    p.set(ox + 13, oy + 11, L.skinDark); p.set(ox + 18, oy + 11, L.skinDark);
+    p.rect(ox + 10, oy + 11, 4, 1, browC);
+    p.rect(ox + 18, oy + 11, 4, 1, browC);
+    p.set(ox + 14, oy + 11, L.skinDark); p.set(ox + 17, oy + 11, L.skinDark);
     // big dark eyes with a shine
-    [10, 19].forEach((x) => {
+    [11, 18].forEach((x) => {
       p.rect(ox + x, oy + 13, 3, 3, L.eyes);
       p.set(ox + x, oy + 13, '#ffffff');
       p.set(ox + x + 2, oy + 15, lighten(L.eyes, 0.3));
@@ -129,20 +129,20 @@ export function drawKai(mode = 'normal', look = KAI_LOOKS[DEFAULT_LOOK]) {
     p.set(ox + 19, oy + 19, '#9a3b4a');
   }
   p.rect(ox + 15, oy + 17, 2, 1, L.skinDark); // nose
-  p.rect(ox + 8, oy + 18, 2, 1, L.cheeks);   // cheeks
-  p.rect(ox + 23, oy + 18, 2, 1, L.cheeks);
+  p.rect(ox + 9, oy + 18, 2, 1, L.cheeks);   // cheeks
+  p.rect(ox + 22, oy + 18, 2, 1, L.cheeks);
 
   // --- hat: dome, droopy tip with pom-pom, fur band ---
   if (back) {
-    p.blob(ox + 16, oy + 3, 10, 4.8, L.hat);
+    p.blob(ox + 16, oy + 3, 9.5, 4.8, L.hat);
     p.blob(ox + 25, oy + 1.5, 4, 3, L.hat);
     p.blob(ox + 30, oy + 3.5, 3, 3, L.hatTrim);
-    p.blob(ox + 16, oy + 5.6, 11, 2.1, L.hatTrim, { dark: '#d9d3e6' });
+    p.blob(ox + 16, oy + 5.6, 10.5, 2.1, L.hatTrim, { dark: '#d9d3e6' });
   } else {
-    p.blob(ox + 16, oy + 5.5, 10, 5, L.hat);
+    p.blob(ox + 16, oy + 5.5, 9.5, 5, L.hat);
     p.blob(ox + 24, oy + 3, 4, 3, L.hat);
     p.blob(ox + 29, oy + 5, 3, 3, L.hatTrim);
-    p.blob(ox + 16, oy + 8, 11, 2.2, L.hatTrim, { dark: '#d9d3e6' });
+    p.blob(ox + 16, oy + 8, 10.5, 2.2, L.hatTrim, { dark: '#d9d3e6' });
   }
 
   return p.outlined();

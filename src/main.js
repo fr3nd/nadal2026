@@ -35,7 +35,9 @@ function layout() {
   const roadW = LANE_W * 3;
   const roadLeft = Math.floor((W - roadW) / 2);
   // Kai rides near the top, just under the HUD
-  const kaiY = Math.max(Math.floor(H * 0.2), Math.ceil(70 / ps) + 26);
+  // (and never under the score box, whatever its size)
+  const hudBottom = ui.el.hud.querySelector('.hud-panel').getBoundingClientRect().bottom;
+  const kaiY = Math.max(Math.floor(H * 0.2), Math.ceil(hudBottom / ps) + 30);
   const geo = { W, H, laneW: LANE_W, roadW, roadLeft, kaiY };
   renderer.resize(geo);
   game.setGeometry(geo);
