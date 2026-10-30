@@ -1,7 +1,7 @@
 // All pixel art is painted from shapes (see pixart.js) in a "Minish Cap"
 // style: round chunky forms, 3-tone shading, colored outlines.
 import { Pix, fromRows, lighten, darken, mix } from './pixart.js';
-import { drawKai, getLook } from './kai.js';
+import { drawKai } from './kai.js';
 
 export const COLORS = {
   ink: '#14183f',
@@ -120,13 +120,12 @@ function arrow(dir) {
 }
 
 // Everything as Pix objects (no DOM) — handy for previews.
-export function buildPix(lookName) {
-  const look = getLook(lookName);
+export function buildPix() {
   const darkForest = { green: '#1f6b4c', snow: '#cfe0ff', trunk: '#5a3b2a' };
   return {
-    kai: drawKai('normal', look),
-    kaiStar: drawKai('star', look),
-    kaiHurt: drawKai('hurt', look),
+    kai: drawKai('normal'),
+    kaiStar: drawKai('star'),
+    kaiHurt: drawKai('hurt'),
     pine: pine(),
     snowman: snowman(),
     rock: rock(),
@@ -142,8 +141,8 @@ export function buildPix(lookName) {
   };
 }
 
-export function buildSprites(lookName) {
-  const px = buildPix(lookName);
+export function buildSprites() {
+  const px = buildPix();
   const out = {};
   for (const [k, v] of Object.entries(px)) out[k] = Array.isArray(v) ? v.map((x) => x.toCanvas()) : v.toCanvas();
   return out;

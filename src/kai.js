@@ -1,9 +1,8 @@
 // ===========================================================================
 //  KAI — edit this file to make him look like the real Kai!
-//  KAI_LOOKS holds the colors and style of each option. The shapes are drawn
+//  KAI_LOOK holds his colors and style. The shapes are drawn
 //  in drawKai() below; every block says which part it paints.
 //  Kai faces the player, riding down the hill on his sled. ~34 x 46 px.
-//  Try an option in the game with  ?kai=a  ?kai=b  ?kai=c  ?kai=d  in the URL.
 // ===========================================================================
 import { Pix, lighten } from './pixart.js';
 
@@ -29,24 +28,15 @@ const BASE = {
   hatStyle: 'low', // 'low' = pulled over the forehead, 'back' = pushed back, more hair
 };
 
-export const KAI_LOOKS = {
-  // A: hat pushed back so the fringe shows, blue jacket + yellow scarf
-  a: { ...BASE, hatStyle: 'back' },
-  // B: hat pulled low, only a bit of fringe peeking out, blue jacket + yellow scarf
-  b: { ...BASE, hatStyle: 'low' },
-  // C: hat pushed back, plum sweatshirt with a white collar (his real sweater)
-  c: { ...BASE, hatStyle: 'back', jacket: '#8c5a64', scarf: '#f6f1e6' },
-  // D: hat pulled low, plum sweatshirt, red scarf
-  d: { ...BASE, hatStyle: 'low', jacket: '#8c5a64', scarf: '#d93a48' },
+export const KAI_LOOK = {
+  ...BASE,
+  hatStyle: 'low',
+  jacket: '#8c5a64', // plum sweatshirt, like his real one
+  scarf: '#d93a48',
 };
-export const DEFAULT_LOOK = 'a';
-
-export function getLook(name) {
-  return KAI_LOOKS[name] || KAI_LOOKS[DEFAULT_LOOK];
-}
 
 // mode: 'normal' | 'star' (golden) | 'hurt' (ouch face)
-export function drawKai(mode = 'normal', look = KAI_LOOKS[DEFAULT_LOOK]) {
+export function drawKai(mode = 'normal', look = KAI_LOOK) {
   const L = { ...look };
   if (mode === 'star') {
     Object.assign(L, { hat: '#ffd23f', jacket: '#ffe88a', pants: '#ffb92e', scarf: '#ffffff', mittens: '#ffd23f', sled: '#ffd23f', sledTrim: '#ffffff' });
