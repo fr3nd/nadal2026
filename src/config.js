@@ -6,15 +6,15 @@ export const CONFIG = {
 
   // --- Speed & difficulty --------------------------------------------------
   pxPerMeter: 15,       // 15 logical px = 1 m
-  speedStart: 90,       // px/s at the start of a run
-  speedMax: 205,        // px/s once fully ramped up
-  rampSeconds: 60,      // time to go from easy to "hard but fair"
-  graceSeconds: 4,      // no obstacles at all during the first seconds
-  rowGapStart: 1.05,    // seconds between rows of things (easy)
-  rowGapEnd: 0.58,      // ... (hard); keep >= ~0.5 so a lane change is always possible
-  obstacleChanceStart: 0.25,   // chance a row has obstacles
-  obstacleChanceEnd: 0.8,
-  doubleObstacleChanceEnd: 0.5, // chance a row has 2 obstacles (never 3)
+  speedStart: 100,       // px/s at the start of a run
+  speedMax: 240,        // px/s once fully ramped up
+  rampSeconds: 45,      // time to go from easy to "hard but fair"
+  graceSeconds: 3,      // no obstacles at all during the first seconds
+  rowGapStart: 0.95,    // seconds between rows of things (easy)
+  rowGapEnd: 0.52,      // ... (hard); keep >= ~0.5 so a lane change is always possible
+  obstacleChanceStart: 0.35,   // chance a row has obstacles
+  obstacleChanceEnd: 0.9,
+  doubleObstacleChanceEnd: 0.6, // chance a row has 2 obstacles (never 3)
 
   // --- Items ---------------------------------------------------------------
   giftChanceOnObstacleRow: 0.5, // gift next to obstacles, on the safe path
