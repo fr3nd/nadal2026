@@ -255,10 +255,19 @@ export class Game {
     if (this.trailTimer > 0 || this.speed < 8 || this.state === 'over') return;
     this.trailTimer = 0.025;
     const k = this.kai;
+    // grooves left by the runners (they start under the sled and scroll away)
     for (const side of [-12, 12]) {
       this.addParticle({
-        x: k.x + side, y: k.y - 6, vx: (Math.random() - 0.5) * 6, vy: -this.speed, life: 0.5,
-        color: Math.random() < 0.5 ? '#fbfdff' : '#a9bfe6', size: 1, grav: 0, follow: true,
+        x: k.x + side - 1, y: k.y + 8, vx: 0, vy: -this.speed, life: 0.8,
+        color: '#9db2ea', size: 2, grav: 0, follow: true,
+      });
+    }
+    // snow spray where the runners touch the ground
+    if (Math.random() < 0.5) {
+      const side = Math.random() < 0.5 ? -12 : 12;
+      this.addParticle({
+        x: k.x + side, y: k.y + 17, vx: side * 1.5 + (Math.random() - 0.5) * 10, vy: -18 - Math.random() * 14, life: 0.3,
+        color: '#ffffff', size: 1, grav: 60,
       });
     }
     if (this.starTime > 0 && Math.random() < 0.6) {

@@ -98,7 +98,7 @@ export class Renderer {
 
   shadow(x, y, w) {
     const g = this.ctx;
-    g.fillStyle = 'rgba(60,80,170,0.28)';
+    g.fillStyle = 'rgba(50,70,170,0.34)';
     g.fillRect(Math.round(x - w / 2 + 2), Math.round(y - 1), w - 4, 1);
     g.fillRect(Math.round(x - w / 2), Math.round(y), w, 2);
     g.fillRect(Math.round(x - w / 2 + 2), Math.round(y + 2), w - 4, 1);
@@ -183,7 +183,8 @@ export class Renderer {
     const star = game.starTime > 0;
     const dead = game.state === 'dying' || game.state === 'over';
 
-    this.shadow(k.x, k.y + 24, 24);
+    // contact shadow right under the runners, so the sled sits on the snow
+    this.shadow(k.x, k.y + 19, 36);
     if (star) {
       // golden aura
       g.fillStyle = 'rgba(255,210,63,0.25)';
@@ -197,9 +198,7 @@ export class Renderer {
     const gold = star && (ending ? Math.floor(now * 12) % 2 === 0 : Math.floor(now * 8) % 4 !== 0);
     let img = gold ? S.kaiStar : S.kai;
     if (dead) img = S.kaiHurt;
-    // little bounce while riding
-    const bob = dead || game.state === 'title' ? 0 : Math.floor(now * 9) % 2;
-    this.sprite(img, k.x, k.y + bob);
+    this.sprite(img, k.x, k.y);
 
     if (dead) {
       // dizzy stars circling his head
