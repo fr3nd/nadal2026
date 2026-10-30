@@ -1,36 +1,24 @@
 // DOM side of the game: screens, HUD, language switch, mute button.
 import { LANGS, getLang, setLang, onLangChange, t } from './i18n.js';
 import { toDataURL } from './sprites.js';
-import { CONFIG as C } from './config.js';
 
 const $ = (id) => document.getElementById(id);
 
 export function createUI(sprites, audio) {
   const el = {
     stage: $('stage'), hud: $('hud'), controls: $('controls'), title: $('title'), over: $('over'),
-    hearts: $('hearts'), gifts: $('hud-gifts'), meters: $('hud-m'), toast: $('toast'), mute: $('mute'),
+    gifts: $('hud-gifts'), meters: $('hud-m'), toast: $('toast'), mute: $('mute'),
     titleBest: $('title-best'), record: $('record'),
     padLeft: $('pad-left'), padRight: $('pad-right'),
   };
 
   const urls = {
-    heart: toDataURL(sprites.iconHeart),
-    heartOff: toDataURL(sprites.iconHeartOff),
     soundOn: toDataURL(sprites.iconSoundOn),
     soundOff: toDataURL(sprites.iconSoundOff),
   };
   $('hud-gift-icon').src = toDataURL(sprites.iconGift);
   el.padLeft.querySelector('img').src = toDataURL(sprites.arrowLeft);
   el.padRight.querySelector('img').src = toDataURL(sprites.arrowRight);
-
-  // hearts
-  const heartImgs = [];
-  for (let i = 0; i < C.lives; i++) {
-    const img = document.createElement('img');
-    img.alt = '';
-    el.hearts.appendChild(img);
-    heartImgs.push(img);
-  }
 
   // language switch (built from LANGS, so new languages show up by themselves)
   document.querySelectorAll('.lang').forEach((box) => {
@@ -64,7 +52,7 @@ export function createUI(sprites, audio) {
   const refreshBest = () => { el.titleBest.textContent = best > 0 ? t('best', { n: best }) : ''; };
   onLangChange(() => { refreshBest(); refreshLang(); });
 
-  let last = { lives: -1, gifts: -1, m: -1 };
+  let last = { gifts: -1, m: -1 };
 
   const ui = {
     el,
@@ -75,10 +63,6 @@ export function createUI(sprites, audio) {
       this.showTitle();
     },
     setBest(b) { best = b; refreshBest(); },
-    controlsTop() {
-      const s = el.stage.getBoundingClientRect();
-      return el.controls.querySelector('.pad').getBoundingClientRect().top - s.top;
-    },
     showTitle() {
       el.title.hidden = false;
       el.over.hidden = true;
@@ -91,7 +75,7 @@ export function createUI(sprites, audio) {
       el.over.hidden = true;
       el.hud.classList.remove('hidden');
       el.controls.classList.add('active');
-      last = { lives: -1, gifts: -1, m: -1 };
+      last = { gifts: -1, m: -1 };
     },
     showOver({ gifts, meters, score, best: b, record }) {
       $('r-gifts').textContent = gifts;
@@ -114,10 +98,6 @@ export function createUI(sprites, audio) {
     },
     // called every frame; only touches the DOM when something changed
     hud(game) {
-      if (game.lives !== last.lives) {
-        last.lives = game.lives;
-        heartImgs.forEach((img, i) => { img.src = i < game.lives ? urls.heart : urls.heartOff; });
-      }
       if (game.gifts !== last.gifts) { last.gifts = game.gifts; el.gifts.textContent = game.gifts; }
       const m = game.meters();
       if (m !== last.m) { last.m = m; el.meters.textContent = m; }

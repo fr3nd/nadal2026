@@ -196,10 +196,6 @@ export class AudioEngine {
       case 'star':
         [523, 659, 784, 1047, 1319, 1568].forEach((f, i) => this.tone('square', f, f, 0.1, 0.12, i * 0.07));
         break;
-      case 'heart':
-        this.tone('triangle', 660, 660, 0.12, 0.3);
-        this.tone('triangle', 990, 990, 0.25, 0.3, 0.1);
-        break;
       case 'hit':
         this.noise(0.3, 0.7, 'lowpass', 900);
         this.tone('sawtooth', 240, 50, 0.35, 0.3);

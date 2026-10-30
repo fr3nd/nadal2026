@@ -18,12 +18,12 @@ let best = store.get('best', 0);
 ui.init(best);
 
 // ---- layout: a portrait play area drawn at ~130 logical px wide -----------
-const TARGET_W = 130;
+const LANE_W = 40;
 function layout() {
   const vw = window.innerWidth;
   const vh = window.innerHeight;
   const cssW = Math.min(vw, Math.floor(vh * 0.62));
-  const ps = Math.max(2, Math.round(cssW / TARGET_W)); // CSS px per logical px
+  const ps = Math.max(2, Math.floor(cssW / 150)); // CSS px per logical px
   const W = Math.floor(cssW / ps);
   const H = Math.floor(vh / ps);
   const stage = ui.el.stage;
@@ -31,11 +31,11 @@ function layout() {
   stage.style.height = `${H * ps}px`;
   stage.style.setProperty('--u', `${(W * ps) / 100}px`);
 
-  const laneW = Math.floor((W * 0.72) / 3);
-  const roadW = laneW * 3;
+  const roadW = LANE_W * 3;
   const roadLeft = Math.floor((W - roadW) / 2);
-  const kaiY = Math.min(Math.floor(H * 0.8), Math.floor(ui.controlsTop() / ps) - 17);
-  const geo = { W, H, laneW, roadW, roadLeft, kaiY };
+  // Kai rides near the top, just under the HUD
+  const kaiY = Math.max(Math.floor(H * 0.2), Math.ceil(70 / ps) + 26);
+  const geo = { W, H, laneW: LANE_W, roadW, roadLeft, kaiY };
   renderer.resize(geo);
   game.setGeometry(geo);
 }
@@ -48,7 +48,6 @@ window.addEventListener('resize', () => {
 // ---- game events -----------------------------------------------------------
 game.on('gift', () => audio.sfx('gift'));
 game.on('star', () => audio.sfx('star'));
-game.on('heart', () => audio.sfx('heart'));
 game.on('hit', () => audio.sfx('hit'));
 game.on('smash', () => audio.sfx('smash'));
 game.on('milestone', () => { ui.toast(t('hoho')); audio.sfx('hoho'); });
@@ -106,3 +105,6 @@ fontReady.catch(() => {}).then(() => {
   layout();
   requestAnimationFrame(frame);
 });
+
+// Dev-only hook for debugging in the console (stripped from production builds).
+if (import.meta.env.DEV) window.__kai = { game, renderer, start };

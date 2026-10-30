@@ -9,7 +9,7 @@ const DEMO_SPEED = 55;
 export class Game {
   constructor() {
     this.handlers = {};
-    this.geo = { W: 130, H: 280, laneW: 30, roadLeft: 20, roadW: 90, kaiY: 230 };
+    this.geo = { W: 195, H: 420, laneW: 40, roadLeft: 37, roadW: 120, kaiY: 90 };
     this.particles = [];
     this.flakes = [];
     this.scroll = 0;
@@ -26,13 +26,13 @@ export class Game {
   // ---- geometry --------------------------------------------------------
   setGeometry(geo) {
     this.geo = geo;
-    this.kai.y = geo.kaiY;
+    this.kai.y = this.state === 'title' ? Math.floor(geo.H * 0.86) : geo.kaiY;
     this.kai.x = this.laneX(this.kai.lane);
     this.kai.toX = this.kai.x;
     this.kai.sliding = false;
     this.kai.slideT = 1;
     this.flakes = [];
-    for (let i = 0; i < 38; i++) {
+    for (let i = 0; i < 55; i++) {
       this.flakes.push({ x: Math.random() * geo.W, y: Math.random() * geo.H, s: 0.6 + Math.random(), big: Math.random() < 0.3 });
     }
   }
@@ -44,12 +44,9 @@ export class Game {
     this.time = 0;
     this.distance = 0;
     this.gifts = 0;
-    this.lives = C.lives;
     this.objects = [];
     this.speed = this.speed || DEMO_SPEED;
-    this.invincible = 0;
     this.starTime = 0;
-    this.slowTime = 0;
     this.shake = 0;
     this.flash = 0;
     this.deadTimer = 0;
@@ -60,7 +57,7 @@ export class Game {
 
   startRun() {
     this.resetRun();
-    this.spawner = new Spawner(this, this.geo.kaiY * 0.45);
+    this.spawner = new Spawner(this, this.geo.H * 0.6);
     this.state = 'play';
     this.kai.buffer.length = 0;
     this.emit('start');
@@ -114,6 +111,8 @@ export class Game {
 
   // ---- main update -----------------------------------------------------
   update(dt) {
+    const ky = this.state === 'title' ? Math.floor(this.geo.H * 0.86) : this.geo.kaiY;
+    this.kai.y += (ky - this.kai.y) * Math.min(1, 6 * dt);
     this.updateFlakes(dt);
     this.updateParticles(dt);
     this.updateSlide(dt);
@@ -131,10 +130,8 @@ export class Game {
     if (playing) this.time += dt;
 
     // speed: eases toward its target, so hits and the final stop feel smooth
-    let target = this.baseSpeed();
-    if (this.slowTime > 0) target *= C.hitSlowFactor;
-    if (!playing) target = 0;
-    this.speed += (target - this.speed) * Math.min(1, (playing ? 5 : 2.2) * dt);
+    const target = playing ? this.baseSpeed() : 0;
+    this.speed += (target - this.speed) * Math.min(1, (playing ? 5 : 3.2) * dt);
     if (!playing && this.speed < 0.5) this.speed = 0;
 
     const dy = this.speed * dt;
@@ -143,14 +140,12 @@ export class Game {
     if (playing) this.spawner.update(dy);
 
     for (const o of this.objects) {
-      o.y += dy;
+      o.y -= dy; // the hill scrolls up, Kai rides down
       o.x = this.laneX(o.lane);
     }
-    this.objects = this.objects.filter((o) => o.y < this.geo.H + 30 && !o.dead);
+    this.objects = this.objects.filter((o) => o.y > -40 && !o.dead);
 
-    this.invincible = Math.max(0, this.invincible - dt);
     this.starTime = Math.max(0, this.starTime - dt);
-    this.slowTime = Math.max(0, this.slowTime - dt);
     this.shake = Math.max(0, this.shake - dt);
     this.flash = Math.max(0, this.flash - dt);
 
@@ -184,14 +179,14 @@ export class Game {
 
   collide() {
     const k = this.kai;
-    const bonus = 2; // collecting is a bit more generous than dodging
+    const bonus = 3; // collecting is a bit more generous than dodging
     for (const o of this.objects) {
       if (o.dead) continue;
       const collectible = o.kind !== 'obstacle';
       const pad = collectible ? bonus : 0;
       if (
         Math.abs(o.x - k.x) < C.kaiHitW + o.hw + pad &&
-        Math.abs(o.y + o.hy - k.y) < C.kaiHitH + o.hh + pad
+        Math.abs(o.y + o.hy - (k.y + 4)) < C.kaiHitH + o.hh + pad
       ) {
         this.touch(o);
         if (this.state !== 'play') return;
@@ -213,40 +208,27 @@ export class Game {
         this.burst(o.x, o.y, ['#ffd23f', '#fbfdff'], 14, 60);
         this.emit('star');
         break;
-      case 'heart':
-        o.dead = true;
-        if (this.lives < C.lives) this.lives++;
-        else this.gifts++;
-        this.burst(o.x, o.y, ['#d62839', '#ff8c9a', '#fbfdff'], 10, 45);
-        this.emit('heart');
-        break;
       case 'obstacle':
         if (this.starTime > 0) {
           o.dead = true;
           this.shake = Math.max(this.shake, 0.12);
           this.burst(o.x, o.y, o.type === 'rock' ? ['#8a94aa', '#5a6580', '#fbfdff'] : o.type === 'pine' ? ['#1f6b4a', '#134635', '#fbfdff'] : ['#fbfdff', '#a9bfe6', '#ff8c2a'], 16, 80);
           this.emit('smash');
-        } else if (this.invincible <= 0) {
-          this.hit(o);
+        } else {
+          this.hit();
         }
         break;
       default:
     }
   }
 
-  hit(o) {
-    this.lives--;
+  // One hit and the run is over (the star protects you).
+  hit() {
     this.shake = C.hitShakeSeconds;
-    this.flash = 0.18;
-    this.slowTime = C.hitSlowSeconds;
-    this.invincible = C.invincibleAfterHit;
-    this.burst(this.kai.x, this.kai.y - 4, ['#fbfdff', '#a9bfe6', '#d62839'], 14, 70);
-    if (this.lives <= 0) {
-      this.lives = 0;
-      this.state = 'dying';
-      this.invincible = 0;
-      this.kai.buffer.length = 0;
-    }
+    this.flash = 0.2;
+    this.state = 'dying';
+    this.kai.buffer.length = 0;
+    this.burst(this.kai.x, this.kai.y + 4, ['#ffffff', '#b3c4f2', '#e2323f'], 18, 90);
     this.emit('hit');
   }
 
@@ -273,15 +255,15 @@ export class Game {
     if (this.trailTimer > 0 || this.speed < 8 || this.state === 'over') return;
     this.trailTimer = 0.025;
     const k = this.kai;
-    for (const side of [-5, 5]) {
+    for (const side of [-12, 12]) {
       this.addParticle({
-        x: k.x + side, y: k.y + 8, vx: (Math.random() - 0.5) * 6, vy: this.speed, life: 0.45,
+        x: k.x + side, y: k.y - 6, vx: (Math.random() - 0.5) * 6, vy: -this.speed, life: 0.5,
         color: Math.random() < 0.5 ? '#fbfdff' : '#a9bfe6', size: 1, grav: 0, follow: true,
       });
     }
     if (this.starTime > 0 && Math.random() < 0.6) {
       this.addParticle({
-        x: k.x + (Math.random() - 0.5) * 18, y: k.y + (Math.random() - 0.5) * 20, vx: 0, vy: 10, life: 0.4,
+        x: k.x + (Math.random() - 0.5) * 30, y: k.y + (Math.random() - 0.5) * 36, vx: 0, vy: 10, life: 0.4,
         color: Math.random() < 0.5 ? '#ffd23f' : '#fbfdff', size: 1, grav: 0,
       });
     }
@@ -294,7 +276,7 @@ export class Game {
       p.y += p.vy * dt;
       p.vy += p.grav * dt;
       // trail dots are glued to the hill, so they follow the current speed
-      if (p.follow) p.vy = this.speed;
+      if (p.follow) p.vy = -this.speed;
     }
     this.particles = this.particles.filter((p) => p.life > 0);
   }

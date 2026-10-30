@@ -13,12 +13,11 @@ const pick = (arr) => arr[Math.floor(rand() * arr.length)];
 
 // Hitbox half-sizes (w,h) and vertical offset from the sprite center.
 const HITBOX = {
-  pine: { hw: 5, hh: 5, hy: 5 },
-  snowman: { hw: 5, hh: 7, hy: 1 },
-  rock: { hw: 6, hh: 3, hy: 1 },
-  gift: { hw: 6, hh: 6, hy: 0 },
-  star: { hw: 7, hh: 7, hy: 0 },
-  heart: { hw: 6, hh: 6, hy: 0 },
+  pine: { hw: 8, hh: 9, hy: 8 },
+  snowman: { hw: 8, hh: 11, hy: 3 },
+  rock: { hw: 11, hh: 6, hy: 2 },
+  gift: { hw: 8, hh: 8, hy: 0 },
+  star: { hw: 10, hh: 10, hy: 0 },
 };
 
 export class Spawner {
@@ -28,17 +27,17 @@ export class Spawner {
     this.reach = [0, 1, 2];
     this.bonusRows = 0;
     this.lastStar = -999;
-    this.lastHeart = -999;
   }
 
   queueBonus(rows) { this.bonusRows += rows; }
 
   update(dy) {
     const g = this.g;
-    this.lastRowY += dy;
+    // the hill scrolls UP: rows are born below the screen and rise toward Kai
+    this.lastRowY -= dy;
     const gap = g.baseSpeed() * lerp(C.rowGapStart, C.rowGapEnd, g.difficulty());
-    while (this.lastRowY > -20 - gap * 0.5) {
-      this.lastRowY -= gap;
+    while (this.lastRowY < g.geo.H + 30 + gap * 0.5) {
+      this.lastRowY += gap;
       this.spawnRow(this.lastRowY, gap);
     }
   }
@@ -85,15 +84,12 @@ export class Spawner {
     }
 
     // --- something between this row and the previous one ---
-    const midY = y + gap / 2;
+    const midY = y - gap / 2;
     const safeLane = () => pick(nextReach);
     const lane = rand() < C.giftRiskChance ? pick(LANES) : safeLane();
     if (g.time > C.starMinTime && g.time - this.lastStar > C.starCooldown && rand() < C.starChance) {
       this.lastStar = g.time;
       this.add('star', 'star', safeLane(), midY);
-    } else if (g.lives < C.lives && g.time - this.lastHeart > C.heartCooldown && rand() < C.heartChance) {
-      this.lastHeart = g.time;
-      this.add('heart', 'heart', safeLane(), midY);
     } else if (rand() < C.giftChanceBetweenRows) {
       this.add('gift', 'gift', lane, midY, { variant: Math.floor(rand() * 5) });
     }

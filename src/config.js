@@ -2,12 +2,12 @@
 // (the game is drawn on a tiny canvas, ~130px wide, then scaled up).
 export const CONFIG = {
   lanes: 3,
-  lives: 3,
+  laneWidth: 40,        // logical px; the road is always 3 lanes wide
 
   // --- Speed & difficulty --------------------------------------------------
-  pxPerMeter: 10,       // 10 logical px = 1 m
-  speedStart: 62,       // px/s at the start of a run
-  speedMax: 150,        // px/s once fully ramped up
+  pxPerMeter: 15,       // 15 logical px = 1 m
+  speedStart: 90,       // px/s at the start of a run
+  speedMax: 205,        // px/s once fully ramped up
   rampSeconds: 60,      // time to go from easy to "hard but fair"
   graceSeconds: 4,      // no obstacles at all during the first seconds
   rowGapStart: 1.05,    // seconds between rows of things (easy)
@@ -25,15 +25,10 @@ export const CONFIG = {
   starMinTime: 12,
   starCooldown: 25,
   starSeconds: 6,
-  heartChance: 0.05,
-  heartCooldown: 10,
 
-  // --- Hits ----------------------------------------------------------------
-  invincibleAfterHit: 1.6,
-  hitSlowFactor: 0.4,   // speed multiplier right after a hit
-  hitSlowSeconds: 0.9,
-  hitShakeSeconds: 0.35,
-  dyingStopSeconds: 0.6, // pause once stopped, before the game over screen
+  // --- Hit (one hit = game over, unless the star is active) ---
+  hitShakeSeconds: 0.4,
+  dyingStopSeconds: 0.7, // pause once stopped, before the game over screen
 
   // --- Milestones ----------------------------------------------------------
   milestoneEvery: 250,  // meters
@@ -45,6 +40,6 @@ export const CONFIG = {
   swipePx: 22,          // finger distance (CSS px) that counts as a swipe
 
   // --- Hitboxes (half sizes, logical px) -----------------------------------
-  kaiHitW: 4.5,
-  kaiHitH: 7,
+  kaiHitW: 9,
+  kaiHitH: 11,
 };

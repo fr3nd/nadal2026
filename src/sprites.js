@@ -1,227 +1,152 @@
-// Pixel art lives here as text maps: one character = one pixel.
-// '.' is transparent; the other letters are looked up in a palette.
-import { KAI_ROWS, KAI_PALETTE, KAI_STAR_PALETTE } from './kai.js';
+// All pixel art is painted from shapes (see pixart.js) in a "Minish Cap"
+// style: round chunky forms, 3-tone shading, colored outlines.
+import { Pix, fromRows, lighten, darken, mix } from './pixart.js';
+import { drawKai } from './kai.js';
 
 export const COLORS = {
-  ink: '#0d1633',
-  night: '#0a1030',
-  snow: '#dbe8fb',
-  snowShade: '#a9bfe6',
-  snowDark: '#7d97cf',
-  white: '#fbfdff',
-  red: '#d62839',
-  redDark: '#8f1b2b',
+  ink: '#14183f',
+  night: '#182247',
+  snow: '#dbe7ff',
+  snowLight: '#f2f7ff',
+  snowShade: '#b3c4f2',
+  snowDeep: '#8aa0e3',
+  bank: '#6f86d4',
+  white: '#ffffff',
+  cream: '#fff3cf',
+  red: '#e2323f',
   gold: '#ffd23f',
-  goldDark: '#e0951b',
-  blue: '#2f6fd0',
-  blueDark: '#1f478f',
-  wood: '#b07a45',
-  woodDark: '#6b3f22',
-  pine: '#1f6b4a',
-  pineDark: '#134635',
-  pineDeep: '#0c2e2b',
-  rock: '#8a94aa',
-  rockDark: '#5a6580',
-  orange: '#ff8c2a',
+  forestFloor: '#1f4d47',
+  forestFloorLight: '#2a655a',
+  pine: '#2f9461',
+  pineDark: '#1d6a4a',
+  pineDeep: '#154b3e',
+  wood: '#8a5a3a',
+  rock: '#9aa6c4',
+  orange: '#ff9a2e',
 };
 
-// Shared letters (individual sprites can override any of them).
-const BASE = {
-  K: COLORS.ink, W: COLORS.white, w: COLORS.snowShade,
-  R: COLORS.red, r: COLORS.redDark, Y: COLORS.gold, y: COLORS.goldDark,
-  B: COLORS.blue, b: COLORS.blueDark, T: COLORS.wood, N: COLORS.woodDark,
-  G: COLORS.pine, d: COLORS.pineDark, O: COLORS.orange,
-  X: COLORS.rock, x: COLORS.rockDark,
-};
+const GIFT_COLORS = ['#e2323f', '#2fae5a', '#3b82f0', '#b25ad6', '#ff9a2e'];
 
-export function makeSprite(rows, palette = {}, { outline = null } = {}) {
-  const pal = { ...BASE, ...palette };
-  const w = rows[0].length;
-  const pad = outline ? 1 : 0;
-  rows.forEach((r, i) => {
-    if (r.length !== w) throw new Error(`Sprite row ${i} has ${r.length} chars, expected ${w}`);
+function pine({ green = COLORS.pine, snow = COLORS.white, trunk = COLORS.wood, snowy = true, size = 1 } = {}) {
+  const p = new Pix(30, 40);
+  p.box(12, 31, 6, 7, trunk, { round: 1 });
+  const tiers = [[15, 27, 13, 6.5], [15, 20, 10.5, 6], [15, 13, 8, 5.5], [15, 7.5, 5, 5]];
+  tiers.forEach(([cx, cy, rx, ry], i) => {
+    p.blob(cx, cy, rx, ry, green);
+    if (snowy) p.blob(cx - 1, cy - ry * 0.4, rx * 0.86, ry * 0.68, snow, { line: false, dark: '#c9d8fb' });
+    if (snowy && i === 3) p.blob(15, 4.2, 2.6, 2, snow, { line: false });
   });
-  const c = document.createElement('canvas');
-  c.width = w + pad * 2;
-  c.height = rows.length + pad * 2;
-  const g = c.getContext('2d');
-  if (outline) {
-    g.fillStyle = outline;
-    rows.forEach((r, y) => {
-      for (let x = 0; x < w; x++) {
-        if (r[x] === '.') continue;
-        g.fillRect(x + pad - 1, y + pad, 3, 1);
-        g.fillRect(x + pad, y + pad - 1, 1, 3);
-      }
-    });
+  return p.outlined();
+}
+
+function snowman() {
+  const p = new Pix(26, 38);
+  const oy = 4;
+  // stick arms
+  const arm = '#6b4a38';
+  p.line(5, oy + 19, 0, oy + 14, arm); p.line(5, oy + 19, 1, oy + 18, arm); p.line(1, oy + 14, 1, oy + 11, arm);
+  p.line(21, oy + 19, 26, oy + 14, arm); p.line(21, oy + 19, 25, oy + 18, arm); p.line(25, oy + 14, 25, oy + 11, arm);
+  p.blob(13, oy + 26, 9.5, 7, COLORS.white, { dark: '#c3d2f6' });
+  p.blob(13, oy + 19, 7.5, 5.5, COLORS.white, { dark: '#c3d2f6' });
+  [[13, 18], [13, 21], [13, 24]].forEach(([x, y]) => p.rect(x - 0.5, oy + y, 2, 2, '#3a2f55'));
+  // head, scarf
+  p.blob(13, oy + 9, 7.5, 6.5, COLORS.white, { dark: '#c3d2f6' });
+  p.blob(13, oy + 16, 7.5, 2, COLORS.red);
+  p.box(17, oy + 16, 3, 6, COLORS.red, { round: 1 });
+  // face
+  p.rect(9, oy + 6, 2, 3, '#2b1d3f'); p.rect(15, oy + 6, 2, 3, '#2b1d3f');
+  p.set(9, oy + 6, '#fff'); p.set(15, oy + 6, '#fff');
+  p.poly([[12, oy + 9], [14, oy + 9], [14, oy + 11.5], [12, oy + 11.5], [18, oy + 11]], COLORS.orange, { line: '#9a4a12', shade: false });
+  [[9, 12], [10, 13], [12, 13.5], [14, 13.5], [16, 12]].forEach(([x, y]) => p.set(x, oy + y, '#4a3a66'));
+  // top hat
+  p.box(5, oy + 1, 16, 3, '#3a3358', { round: 1 });
+  p.box(8, oy - 3, 10, 5, '#4a4270', { round: 1 });
+  p.rect(8, oy, 10, 1, COLORS.red);
+  return p.outlined();
+}
+
+function rock() {
+  const p = new Pix(30, 22);
+  p.blob(16, 14, 12, 7, COLORS.rock, { dark: '#6f7ba2' });
+  p.blob(8, 15, 7, 5, mix(COLORS.rock, '#8c7aa8', 0.25), { dark: '#6f7ba2' });
+  p.blob(19, 8, 7, 3, COLORS.white, { line: false, dark: '#c3d2f6' });
+  p.blob(9, 11, 4, 1.8, COLORS.white, { line: false, dark: '#c3d2f6' });
+  p.line(15, 13, 17, 17, '#58628b');
+  p.line(17, 17, 15, 18, '#58628b');
+  return p.outlined();
+}
+
+function gift(color) {
+  const p = new Pix(18, 18);
+  const light = lighten(color, 0.3);
+  p.box(2, 8, 14, 9, color, { round: 1 });
+  p.box(1, 5, 16, 5, light, { round: 1, light: lighten(light, 0.4) });
+  p.box(8, 5, 3, 12, COLORS.gold, { round: 0, light: '#fff1a0' });
+  p.blob(6, 3, 3.2, 2.4, COLORS.gold);
+  p.blob(12, 3, 3.2, 2.4, COLORS.gold);
+  p.rect(8, 3, 3, 3, '#e0951b');
+  p.set(4, 9, '#ffffff'); p.set(4, 10, '#ffffff');
+  return p.outlined();
+}
+
+function star() {
+  const p = new Pix(24, 24);
+  const pts = [];
+  for (let i = 0; i < 10; i++) {
+    const r = i % 2 === 0 ? 10.5 : 4.6;
+    const a = -Math.PI / 2 + (i * Math.PI) / 5;
+    pts.push([12 + Math.cos(a) * r, 12.5 + Math.sin(a) * r]);
   }
-  rows.forEach((r, y) => {
-    for (let x = 0; x < w; x++) {
-      const ch = r[x];
-      if (ch === '.') continue;
-      g.fillStyle = pal[ch] || '#f0f';
-      g.fillRect(x + pad, y + pad, 1, 1);
-    }
-  });
-  return c;
+  p.poly(pts, COLORS.gold, { light: '#fff08a', dark: '#f0a21e' });
+  p.set(9, 9, '#ffffff'); p.set(10, 8, '#ffffff'); p.set(9, 10, '#fff7c2');
+  p.rect(10, 12, 2, 2, '#2b1d3f'); p.rect(14, 12, 2, 2, '#2b1d3f');
+  p.set(10, 12, '#fff'); p.set(14, 12, '#fff');
+  p.rect(12, 15, 2, 1, '#9a3b4a');
+  return p.outlined();
+}
+
+const SPEAKER_ON = [
+  '....W.....', '...WW..W..', 'WWWWW...W.', 'WWWWW.W.W.', 'WWWWW.W.W.', 'WWWWW...W.', '...WW..W..', '....W.....',
+];
+const SPEAKER_OFF = [
+  '....W.....', '...WW.....', 'WWWWW.R..R', 'WWWWW..RR.', 'WWWWW..RR.', 'WWWWW.R..R', '...WW.....', '....W.....',
+];
+
+function arrow(dir) {
+  const p = new Pix(12, 20);
+  const pts = dir < 0 ? [[10, 1], [10, 19], [1, 10]] : [[2, 1], [2, 19], [11, 10]];
+  p.poly(pts, '#fff3cf', { line: '#7a4a1e', shade: false });
+  return p;
+}
+
+// Everything as Pix objects (no DOM) — handy for previews.
+export function buildPix() {
+  const darkForest = { green: '#1f6b4c', snow: '#cfe0ff', trunk: '#5a3b2a' };
+  return {
+    kai: drawKai('normal'),
+    kaiStar: drawKai('star'),
+    kaiHurt: drawKai('hurt'),
+    pine: pine(),
+    snowman: snowman(),
+    rock: rock(),
+    gifts: GIFT_COLORS.map(gift),
+    star: star(),
+    forestPine: pine(darkForest),
+    forestPineLight: pine({ green: '#2f8a5d', snow: '#e6f0ff', trunk: '#6a4630' }),
+    iconGift: gift(GIFT_COLORS[0]),
+    iconSoundOn: fromRows(SPEAKER_ON, { W: '#fff3cf' }),
+    iconSoundOff: fromRows(SPEAKER_OFF, { W: '#fff3cf', R: '#ff6b6b' }),
+    arrowLeft: arrow(-1),
+    arrowRight: arrow(1),
+  };
+}
+
+export function buildSprites() {
+  const px = buildPix();
+  const out = {};
+  for (const [k, v] of Object.entries(px)) out[k] = Array.isArray(v) ? v.map((x) => x.toCanvas()) : v.toCanvas();
+  return out;
 }
 
 export const toDataURL = (canvas) => canvas.toDataURL();
-
-// ---------------------------------------------------------------- Trees ----
-// Built from tiers; left half lighter, right half darker, snow on the left.
-function pineRows() {
-  const rows = [];
-  const tiers = [[2, 8], [4, 12], [6, 16]];
-  tiers.forEach(([from, to]) => {
-    for (let w = from; w <= to; w += 2) {
-      const first = w === from;
-      let s = '';
-      for (let i = 0; i < w; i++) {
-        let ch = i < w / 2 ? 'G' : 'd';
-        if (!first && w <= from + 2 && i < w / 2 - 1) ch = 'W';
-        if (!first && w <= from + 4 && i < 1) ch = 'W';
-        s += ch;
-      }
-      const pad = '.'.repeat((16 - w) / 2);
-      rows.push(pad + s + pad);
-    }
-  });
-  rows.push('......NNTT......', '......NNTT......');
-  return rows;
-}
-
-const SNOWMAN = [
-  '.....KKKK.....',
-  '.....KKKK.....',
-  '....RRRRRR....',
-  '...KKKKKKKK...',
-  '....WWWWWW....',
-  '...WWKWWKWW...',
-  '...WWWOOWWw...',
-  '...WWWWWWWw...',
-  '....RRRRRR....',
-  '..WWWWWWWWWw..',
-  '..WWWWKWWWWw..',
-  '.WWWWWWWWWWWw.',
-  '.WWWWWKWWWWWw.',
-  '.WWWWWWWWWWww.',
-  '.WWWWWKWWWWww.',
-  '..wWWWWWWWww..',
-  '....wwwwww....',
-];
-
-const ROCK = [
-  '....WWWWW.....',
-  '..WWWWWWWxx...',
-  '.WWWXXXXXXxxx.',
-  '.XXXXXXXXXxxx.',
-  'XXXXXXXXXXxxxx',
-  'XXXXXXXXXXxxxx',
-  'XXXXXXXXXxxxxx',
-  '.xxxxxxxxxxxx.',
-  '..xxxxxxxxxx..',
-];
-
-const GIFT = [
-  '..RR..RR..',
-  '...RRRR...',
-  'bbbbRRbbbb',
-  'BBBBRRBBBB',
-  'RRRRRRRRRR',
-  'BBBBRRBBBb',
-  'BBBBRRBBBb',
-  'BBBBRRBBbb',
-  'bbbbRRbbbb',
-];
-
-const STAR = [
-  '.....YY.....',
-  '.....YY.....',
-  '....YYYY....',
-  'YYYYYYYYYYYY',
-  '.YYYWYYYYYY.',
-  '..YYYYYYYY..',
-  '...YYYYYY...',
-  '..YYYYYYYY..',
-  '..YYY..YYY..',
-  '.YYY....YYY.',
-  '.YY......YY.',
-  'YY........YY',
-];
-
-const HEART = [
-  '.RRR.RRR.',
-  'RRRRRRRRR',
-  'RWRRRRRRr',
-  'RWRRRRRRr',
-  '.RRRRRRr.',
-  '..RRRRr..',
-  '...RRr...',
-  '....r....',
-];
-
-const SPEAKER_ON = [
-  '....W.....',
-  '...WW..W..',
-  'WWWWW...W.',
-  'WWWWW.W.W.',
-  'WWWWW.W.W.',
-  'WWWWW...W.',
-  '...WW..W..',
-  '....W.....',
-];
-const SPEAKER_OFF = [
-  '....W.....',
-  '...WW.....',
-  'WWWWW.R..R',
-  'WWWWW..RR.',
-  'WWWWW..RR.',
-  'WWWWW.R..R',
-  '...WW.....',
-  '....W.....',
-];
-
-function arrowRows(h = 11) {
-  const rows = [];
-  for (let i = 0; i < h; i++) {
-    const n = Math.min(i, h - 1 - i) + 1;
-    rows.push('.'.repeat(Math.ceil(h / 2) - n) + 'W'.repeat(n));
-  }
-  return rows;
-}
-const mirror = (rows) => rows.map((r) => [...r].reverse().join(''));
-
-export const GIFT_COLORS = [
-  { B: '#d62839', b: '#8f1b2b', R: '#ffd23f' },
-  { B: '#2fa84f', b: '#1d7035', R: '#fbfdff' },
-  { B: '#3a86ff', b: '#235bb8', R: '#ffd23f' },
-  { B: '#b44fd6', b: '#7a2f94', R: '#ffd23f' },
-  { B: '#ff9f1c', b: '#c4730a', R: '#d62839' },
-];
-
-const OUT = { outline: COLORS.ink };
-
-export function buildSprites() {
-  const pine = pineRows();
-  const darkPine = { G: COLORS.pineDark, d: COLORS.pineDeep };
-  return {
-    kai: makeSprite(KAI_ROWS, KAI_PALETTE, OUT),
-    kaiStar: makeSprite(KAI_ROWS, KAI_STAR_PALETTE, OUT),
-    pine: makeSprite(pine, {}, OUT),
-    snowman: makeSprite(SNOWMAN, {}, OUT),
-    rock: makeSprite(ROCK, {}, OUT),
-    gifts: GIFT_COLORS.map((p) => makeSprite(GIFT, p, OUT)),
-    star: makeSprite(STAR, {}, OUT),
-    heart: makeSprite(HEART, {}, OUT),
-    forestPine: makeSprite(pine, darkPine),
-    // UI icons (used as <img> via data URLs)
-    iconGift: makeSprite(GIFT, GIFT_COLORS[0]),
-    iconHeart: makeSprite(HEART),
-    iconHeartOff: makeSprite(HEART, { R: '#2a3563', r: '#1b2447', W: '#3a4678' }),
-    iconSoundOn: makeSprite(SPEAKER_ON),
-    iconSoundOff: makeSprite(SPEAKER_OFF),
-    arrowLeft: makeSprite(arrowRows(), {}),
-    arrowRight: makeSprite(mirror(arrowRows()), {}),
-  };
-}
+export { darken };
