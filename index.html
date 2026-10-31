@@ -36,6 +36,7 @@
       <p class="panel hint" data-i18n="hint"></p>
       <p class="best" id="title-best"></p>
       <button id="btn-play" class="btn" type="button" data-i18n="play">Play</button>
+      <button id="btn-records" class="link" type="button" data-i18n="records" hidden>Records</button>
       <div class="lang" data-i18n-label="language"></div>
     </section>
 
@@ -48,8 +49,23 @@
         <div class="total"><span data-i18n="score">Score</span><b id="r-score">0</b></div>
         <div><span data-i18n="bestLabel">Best</span><b id="r-best">0</b></div>
       </div>
+      <form id="name-form" hidden autocomplete="off">
+        <p class="name-prompt" id="name-prompt"></p>
+        <input id="name-input" type="text" maxlength="12" autocapitalize="words" autocorrect="off" spellcheck="false"
+               enterkeyhint="done" data-i18n-label="yourName" data-i18n-placeholder="yourName">
+        <button id="btn-save" class="btn" type="submit" data-i18n="save">Save</button>
+        <button id="btn-skip" class="link" type="button" data-i18n="skip">Skip</button>
+      </form>
+      <p id="save-msg" class="save-msg" hidden></p>
       <button id="btn-retry" class="btn" type="button" data-i18n="retry">Try again</button>
+      <button id="btn-records-over" class="link" type="button" data-i18n="records" hidden>Records</button>
       <div class="lang" data-i18n-label="language"></div>
+    </section>
+
+    <section id="board" class="screen" hidden>
+      <h2 data-i18n="records">Records</h2>
+      <div class="panel board-panel"><div id="board-list" class="scrollable"></div></div>
+      <button id="btn-board" class="btn" type="button" data-i18n="back">Back</button>
     </section>
   </div>
   <script type="module" src="./src/main.js"></script>

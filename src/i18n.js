@@ -26,6 +26,18 @@ export const STRINGS = {
     soundOn: 'Sound on',
     soundOff: 'Sound off',
     language: 'Language',
+    records: 'Records',
+    back: 'Back',
+    loading: 'Loading…',
+    noRecords: 'No records yet. Be the first!',
+    namePrompt: 'You made the top {n}! Enter your name:',
+    yourName: 'Your name',
+    save: 'Save',
+    skip: 'Skip',
+    saving: 'Saving…',
+    scoreError: 'Could not save your score. Try again later.',
+    tableError: 'Could not load the records.',
+    youAre: 'You are number {n}!',
   },
   ca: {
     pageTitle: 'El Trineu del Kai – Bon Nadal 2026',
@@ -48,6 +60,18 @@ export const STRINGS = {
     soundOn: 'Activa el so',
     soundOff: 'Silencia el so',
     language: 'Idioma',
+    records: 'Rècords',
+    back: 'Enrere',
+    loading: 'Carregant…',
+    noRecords: 'Encara no hi ha cap rècord. Sigues el primer!',
+    namePrompt: 'Has entrat al top {n}! Escriu el teu nom:',
+    yourName: 'El teu nom',
+    save: 'Desa',
+    skip: 'Omet',
+    saving: 'Desant…',
+    scoreError: 'No s’ha pogut desar la puntuació. Torna-ho a provar més tard.',
+    tableError: 'No s’han pogut carregar els rècords.',
+    youAre: 'Ets el número {n}!',
   },
 };
 
@@ -91,6 +115,9 @@ function apply() {
   });
   document.querySelectorAll('[data-i18n-label]').forEach((el) => {
     el.setAttribute('aria-label', t(el.dataset.i18nLabel));
+  });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach((el) => {
+    el.setAttribute('placeholder', t(el.dataset.i18nPlaceholder));
   });
 }
 

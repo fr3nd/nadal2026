@@ -58,6 +58,7 @@ export function setupInput({ stage, padLeft, padRight, onMove, onGesture, onConf
 
   // --- keyboard -------------------------------------------------------
   window.addEventListener('keydown', (e) => {
+    if (e.target.closest && e.target.closest('input, textarea')) return; // typing a name
     if (e.repeat) return;
     onGesture();
     const k = e.key;
@@ -72,8 +73,9 @@ export function setupInput({ stage, padLeft, padRight, onMove, onGesture, onConf
 
   // --- no scrolling, zooming, selecting, context menus ----------------
   const stop = (e) => e.preventDefault();
-  ['gesturestart', 'gesturechange', 'contextmenu', 'dblclick', 'selectstart', 'dragstart'].forEach((n) =>
+  ['gesturestart', 'gesturechange', 'contextmenu', 'dblclick', 'dragstart'].forEach((n) =>
     document.addEventListener(n, stop));
-  document.addEventListener('touchmove', stop, { passive: false });
+  document.addEventListener('selectstart', (e) => { if (!(e.target.closest && e.target.closest('input'))) e.preventDefault(); });
+  document.addEventListener('touchmove', (e) => { if (!(e.target.closest && e.target.closest('.scrollable'))) e.preventDefault(); }, { passive: false });
   document.addEventListener('touchstart', (e) => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
 }

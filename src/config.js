@@ -1,6 +1,12 @@
 // All the knobs of the game in one place. Distances are in "logical pixels"
 // (the game is drawn on a tiny canvas, ~130px wide, then scaled up).
 export const CONFIG = {
+  // --- High scores (see apps-script/ and the README). Leave empty to disable the
+  // shared table: the game then only keeps each device's own best score.
+  scoresUrl: '',
+  scoresTimeoutMs: 8000,
+  scoresTop: 20,
+
   lanes: 3,
   laneWidth: 40,        // logical px; the road is always 3 lanes wide
 

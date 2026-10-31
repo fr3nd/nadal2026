@@ -45,6 +45,38 @@ Code layout: `game.js` (rules) · `spawner.js` (rows + safe path) · `render.js`
 Sound is synthesized with the Web Audio API, so there are no audio files. The best score,
 language and mute choice are stored on the device (localStorage) only.
 
+## High scores (Google Sheet + Apps Script)
+
+The shared top-20 table lives in a private Google Sheet, behind a small Apps Script web app
+(`apps-script/Code.gs`). It needs no server and no secrets in this repo.
+
+- A run asks the script for a signed, single-use token when it starts. The score is only accepted
+  with that token, and the script checks it against the time *it* measured, plus plausibility
+  limits, so scores can't be submitted without playing or replayed. Names are cleaned (length,
+  control characters, spreadsheet formulas). It can't stop someone who really plays and sends
+  slightly inflated numbers; that is accepted for a family card.
+- To moderate, open the sheet (it is created in the Google account that deployed the script,
+  called "Kai's Sled - high scores") and delete rows.
+- If `scoresUrl` in `src/config.js` is empty, the game works without the shared table.
+
+Deploy or update the script with [clasp](https://github.com/google/clasp):
+
+```sh
+npx @google/clasp login                    # once, and enable the Apps Script API:
+                                           # https://script.google.com/home/usersettings
+npx @google/clasp push                     # upload apps-script/
+npx @google/clasp deploy                   # new version; the web app URL is
+                                           # https://script.google.com/macros/s/<deploymentId>/exec
+```
+
+The first time, open the script (`npx @google/clasp open-script`), run `setup` and authorize it.
+Put the web app URL in `scoresUrl` (`src/config.js`). To update the script later, `push` and run
+`deploy --deploymentId <id>` so the URL stays the same.
+
+Tests (no Google account needed): `node tests/apps-script.test.mjs` runs `Code.gs` against a mock.
+To try the game against a local fake table: `SEED=1 node tests/mock-scores-server.mjs`, then open
+`http://localhost:5173/?scores=http://localhost:8787/` (dev server only).
+
 ## Credits and licenses
 
 - Code and pixel art: MIT, see [LICENSE](LICENSE).

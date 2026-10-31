@@ -5,6 +5,7 @@ import { createUI } from './ui.js';
 import { setupInput } from './input.js';
 import { initLang, t } from './i18n.js';
 import { store } from './storage.js';
+import * as scores from './scores.js';
 
 initLang();
 
@@ -16,6 +17,7 @@ const ui = createUI(renderer.sprites, audio);
 
 let best = store.get('best', 0);
 ui.init(best);
+ui.setRecordsEnabled(scores.enabled());
 
 // ---- layout: a portrait play area drawn at ~130 logical px wide -----------
 const LANE_W = 40;
@@ -63,10 +65,35 @@ game.on('gameover', () => {
   if (record) { best = score; store.set('best', best); }
   ui.setBest(best);
   ui.showOver({ gifts: game.gifts, meters: game.meters(), score, best, record });
+  // made the shared table? then ask for a name
+  if (scores.qualifies(score)) ui.askName(store.get('name', ''));
 });
+
+// ---- shared high scores ----------------------------------------------------
+ui.onSaveName = async (name) => {
+  store.set('name', name);
+  ui.setSaving();
+  const r = await scores.submit(name, game.gifts, game.meters());
+  if (r.ok) ui.showBoard({ top: r.top, highlight: r.rank, buttonKey: 'retry' });
+  else ui.endNameStep('scoreError');
+};
+ui.onSkip = () => ui.endNameStep(null);
+// the single board button: "Try again" after a run, "Back" when opened from the title
+ui.onBoardButton = () => {
+  if (game.state === 'title') ui.showTitle();
+  else start();
+};
+ui.onRecords = async (from) => {
+  const buttonKey = from === 'title' ? 'back' : 'retry';
+  ui.showBoard({ top: [], buttonKey, messageKey: 'loading' });
+  const top = await scores.getTop();
+  if (top) ui.showBoard({ top, buttonKey });
+  else ui.showBoard({ top: [], buttonKey, messageKey: 'tableError' });
+};
 
 function start() {
   audio.unlock();
+  scores.startRun(); // background: gets this run's token and the current table
   ui.showGame();
   game.startRun();
   audio.startMusic();
