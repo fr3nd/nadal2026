@@ -2,7 +2,7 @@
 // (no audio files). "Jingle Bells" (J. L. Pierpont, 1857) is public domain.
 import { store } from './storage.js';
 
-const BPM = 160;
+const BPM = 190;
 const BEAT = 60 / BPM;
 const mtof = (m) => 440 * Math.pow(2, (m - 69) / 12);
 
@@ -60,9 +60,6 @@ export class AudioEngine {
     this.master = this.ctx.createGain();
     this.master.gain.value = this.muted ? 0 : 1;
     this.master.connect(this.ctx.destination);
-    this.musicGain = this.ctx.createGain();
-    this.musicGain.gain.value = 0.55;
-    this.musicGain.connect(this.master);
     const len = this.ctx.sampleRate * 0.6;
     this.noiseBuf = this.ctx.createBuffer(1, len, this.ctx.sampleRate);
     const d = this.noiseBuf.getChannelData(0);
@@ -93,25 +90,34 @@ export class AudioEngine {
   startMusic() {
     this.wantMusic = true;
     if (!this.ctx || this.musicOn) return;
+    this.cut(this.sadGain); // a new run silences the sad song
     this.musicOn = true;
     this.idx = 0;
+    // a fresh gain node per run, so stopMusic() can cut every scheduled note at once
+    this.musicGain = this.ctx.createGain();
+    this.musicGain.gain.value = 0.55;
+    this.musicGain.connect(this.master);
     this.loopStart = this.ctx.currentTime + 0.1;
     this.timer = setInterval(() => this.schedule(), 40);
     this.schedule();
   }
 
+  // Immediate stop: notes are scheduled slightly ahead, so we disconnect them all.
   stopMusic() {
     this.wantMusic = false;
     this.musicOn = false;
     clearInterval(this.timer);
-    if (this.ctx) {
-      const g = this.musicGain.gain;
-      g.cancelScheduledValues(this.ctx.currentTime);
-      g.setValueAtTime(g.value, this.ctx.currentTime);
-      g.linearRampToValueAtTime(0, this.ctx.currentTime + 0.25);
-      // restore volume after the fade, for the next start
-      setTimeout(() => { if (!this.musicOn && this.ctx) this.musicGain.gain.setValueAtTime(0.55, this.ctx.currentTime); }, 400);
-    }
+    this.cut(this.musicGain);
+    this.musicGain = null;
+  }
+
+  cut(node) {
+    if (!node || !this.ctx) return;
+    try {
+      node.gain.cancelScheduledValues(this.ctx.currentTime);
+      node.gain.setValueAtTime(0, this.ctx.currentTime);
+      node.disconnect();
+    } catch { /* already disconnected */ }
   }
 
   schedule() {
@@ -186,6 +192,48 @@ export class AudioEngine {
     s.stop(t + dur + 0.02);
   }
 
+  // The "sad trombone": three sagging notes, then a long falling one with vibrato.
+  sadSong() {
+    const ctx = this.ctx;
+    this.cut(this.sadGain);
+    const out = ctx.createGain();
+    out.gain.value = 0.5;
+    const lp = ctx.createBiquadFilter();
+    lp.type = 'lowpass';
+    lp.frequency.value = 1100;
+    lp.connect(out);
+    out.connect(this.master);
+    this.sadGain = out;
+    const t0 = ctx.currentTime + 0.12;
+    // [midi, start, length, glide down in semitones]
+    [[63, 0, 0.55, 0.5], [62, 0.6, 0.55, 0.5], [61, 1.2, 0.55, 0.5], [60, 1.8, 2.2, 3]].forEach(([m, at, len, glide], i) => {
+      const f = mtof(m);
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = 'sawtooth';
+      o.frequency.setValueAtTime(f, t0 + at);
+      o.frequency.exponentialRampToValueAtTime(f * Math.pow(2, -glide / 12), t0 + at + len);
+      if (i === 3) { // wobble on the last note
+        const lfo = ctx.createOscillator();
+        const lg = ctx.createGain();
+        lfo.frequency.value = 6;
+        lg.gain.value = f * 0.012;
+        lfo.connect(lg);
+        lg.connect(o.frequency);
+        lfo.start(t0 + at + 0.4);
+        lfo.stop(t0 + at + len + 0.05);
+      }
+      g.gain.setValueAtTime(0.0001, t0 + at);
+      g.gain.linearRampToValueAtTime(0.35, t0 + at + 0.04);
+      g.gain.setValueAtTime(0.35, t0 + at + len * 0.7);
+      g.gain.linearRampToValueAtTime(0.0001, t0 + at + len);
+      o.connect(g);
+      g.connect(lp);
+      o.start(t0 + at);
+      o.stop(t0 + at + len + 0.05);
+    });
+  }
+
   sfx(name) {
     if (!this.ctx || this.muted) return;
     switch (name) {
@@ -208,8 +256,8 @@ export class AudioEngine {
       case 'hoho':
         [196, 196, 165].forEach((f, i) => this.tone('square', f, f * 0.97, 0.16, 0.16, i * 0.22));
         break;
-      case 'gameover':
-        [392, 330, 262, 196].forEach((f, i) => this.tone('triangle', f, f, 0.3, 0.35, i * 0.28));
+      case 'sad':
+        this.sadSong();
         break;
       default:
     }

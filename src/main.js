@@ -50,7 +50,11 @@ window.addEventListener('resize', () => {
 // ---- game events -----------------------------------------------------------
 game.on('gift', () => audio.sfx('gift'));
 game.on('star', () => audio.sfx('star'));
-game.on('hit', () => audio.sfx('hit'));
+game.on('hit', () => {
+  audio.stopMusic(); // the music cuts off immediately...
+  audio.sfx('hit');
+  audio.sfx('sad'); // ...and the sad song plays
+});
 game.on('smash', () => audio.sfx('smash'));
 game.on('milestone', () => { ui.toast(t('hoho')); audio.sfx('hoho'); });
 game.on('gameover', () => {
@@ -58,8 +62,6 @@ game.on('gameover', () => {
   const record = score > best;
   if (record) { best = score; store.set('best', best); }
   ui.setBest(best);
-  audio.stopMusic();
-  audio.sfx('gameover');
   ui.showOver({ gifts: game.gifts, meters: game.meters(), score, best, record });
 });
 

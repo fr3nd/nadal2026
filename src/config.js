@@ -5,9 +5,9 @@ export const CONFIG = {
   laneWidth: 40,        // logical px; the road is always 3 lanes wide
 
   // --- Speed & difficulty --------------------------------------------------
-  pxPerMeter: 15,       // 15 logical px = 1 m
-  speedStart: 100,       // px/s at the start of a run
-  speedMax: 240,        // px/s once fully ramped up
+  pxPerMeter: 20,       // 20 logical px = 1 m
+  speedStart: 125,       // px/s at the start of a run
+  speedMax: 290,        // px/s once fully ramped up
   rampSeconds: 45,      // time to go from easy to "hard but fair"
   graceSeconds: 3,      // no obstacles at all during the first seconds
   rowGapStart: 0.95,    // seconds between rows of things (easy)
