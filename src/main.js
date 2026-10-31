@@ -5,7 +5,6 @@ import { createUI } from './ui.js';
 import { setupInput } from './input.js';
 import { initLang, t, onLangChange } from './i18n.js';
 import { store } from './storage.js';
-import { CONFIG } from './config.js';
 import * as scores from './scores.js';
 
 initLang();
@@ -14,7 +13,6 @@ const canvas = document.getElementById('game');
 const game = new Game();
 const renderer = new Renderer(canvas);
 const audio = new AudioEngine();
-audio.sadVariant = Number(new URLSearchParams(location.search).get('sad')) || CONFIG.sadSound; // ?sad=N to try the options
 const ui = createUI(renderer.sprites, audio);
 
 let best = store.get('best', 0);
@@ -62,7 +60,7 @@ game.on('star', () => audio.sfx('star'));
 game.on('hit', () => {
   audio.stopMusic(); // the music cuts off immediately...
   audio.sfx('hit');
-  audio.sfx('sad'); // ...and the sad song plays
+  audio.sfx('sad'); // ...and the falling-notes sound plays
 });
 game.on('smash', () => audio.sfx('smash'));
 game.on('milestone', () => { ui.toast(t('hoho')); audio.sfx('hoho'); });
