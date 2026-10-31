@@ -26,7 +26,7 @@ export class Game {
   // ---- geometry --------------------------------------------------------
   setGeometry(geo) {
     this.geo = geo;
-    this.kai.y = this.state === 'title' ? Math.floor(geo.H * 0.86) : geo.kaiY;
+    this.kai.y = this.state === 'title' ? this.titleKaiY() : geo.kaiY;
     this.kai.x = this.laneX(this.kai.lane);
     this.kai.toX = this.kai.x;
     this.kai.sliding = false;
@@ -36,6 +36,9 @@ export class Game {
       this.flakes.push({ x: Math.random() * geo.W, y: Math.random() * geo.H, s: 0.6 + Math.random(), big: Math.random() < 0.3 });
     }
   }
+
+  // On the title screen Kai waits in the free space below the buttons (measured in main.js).
+  titleKaiY() { return this.geo.titleKaiY ?? Math.floor(this.geo.H * 0.86); }
 
   laneX(l) { return this.geo.roadLeft + this.geo.laneW * (l + 0.5); }
 
@@ -112,7 +115,7 @@ export class Game {
 
   // ---- main update -----------------------------------------------------
   update(dt) {
-    const ky = this.state === 'title' ? Math.floor(this.geo.H * 0.86) : this.geo.kaiY;
+    const ky = this.state === 'title' ? this.titleKaiY() : this.geo.kaiY;
     this.kai.y += (ky - this.kai.y) * Math.min(1, 6 * dt);
     this.updateFlakes(dt);
     this.updateParticles(dt);

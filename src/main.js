@@ -3,7 +3,7 @@ import { Renderer } from './render.js';
 import { AudioEngine } from './audio.js';
 import { createUI } from './ui.js';
 import { setupInput } from './input.js';
-import { initLang, t } from './i18n.js';
+import { initLang, t, onLangChange } from './i18n.js';
 import { store } from './storage.js';
 import * as scores from './scores.js';
 
@@ -39,10 +39,16 @@ function layout() {
   // (and never under the score box, whatever its size)
   const hudBottom = ui.el.hud.querySelector('.hud-panel').getBoundingClientRect().bottom;
   const kaiY = Math.max(Math.floor(H * 0.2), Math.ceil(hudBottom / ps) + 30);
-  const geo = { W, H, laneW: LANE_W, roadW, roadLeft, kaiY };
+  // title screen: Kai waits halfway between the last button and the language switch
+  const rect = (el) => el.getBoundingClientRect();
+  const lastBtn = ui.el.recordsTitle.hidden ? document.getElementById('btn-play') : ui.el.recordsTitle;
+  const langTop = rect(ui.el.title.querySelector('.lang')).top;
+  const titleKaiY = ui.el.title.hidden ? undefined : Math.round((rect(lastBtn).bottom + 8 + langTop) / 2 / ps);
+  const geo = { W, H, laneW: LANE_W, roadW, roadLeft, kaiY, titleKaiY: titleKaiY || game.geo.titleKaiY };
   renderer.resize(geo);
   game.setGeometry(geo);
 }
+onLangChange(() => requestAnimationFrame(layout)); // button text changes size with the language
 let resizeTimer;
 window.addEventListener('resize', () => {
   clearTimeout(resizeTimer);

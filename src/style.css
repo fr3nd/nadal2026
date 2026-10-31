@@ -363,3 +363,20 @@ h2 { font-size: calc(var(--u) * 13.4); margin-bottom: calc(var(--u) * 5); }
 .board-row .pts { color: var(--red-dark); }
 .board-row.me { background: var(--gold); box-shadow: 0 0 0 2px var(--brown); }
 .board-msg { padding: calc(var(--u) * 4); text-align: center; font-size: calc(var(--u) * 6); }
+
+/* secondary button (blue), e.g. "High scores" */
+.btn[hidden] { display: none; }
+.btn.btn-alt {
+  background: var(--blue);
+  font-size: calc(var(--u) * 6);
+  padding: calc(var(--u) * 2.6) calc(var(--u) * 6);
+  text-shadow: 0 3px 0 #1f3f8f;
+  box-shadow: inset 0 -6px 0 #24449a, inset 0 4px 0 rgba(255, 255, 255, 0.35), 0 0 0 2px var(--ink), 0 5px 0 2px var(--ink);
+  margin-bottom: calc(var(--u) * 5);
+}
+.btn.btn-alt:active {
+  transform: translateY(4px);
+  box-shadow: inset 0 6px 0 #24449a, 0 0 0 2px var(--ink), 0 1px 0 2px var(--ink);
+}
+#over .btn.btn-alt { min-width: 100%; margin-bottom: calc(var(--u) * 2); font-size: calc(var(--u) * 5.5); }
+#board h2 { font-size: calc(var(--u) * 10.5); }

@@ -26,7 +26,7 @@ export const STRINGS = {
     soundOn: 'Sound on',
     soundOff: 'Sound off',
     language: 'Language',
-    records: 'Records',
+    records: 'High scores',
     back: 'Back',
     loading: 'Loading…',
     noRecords: 'No records yet. Be the first!',
