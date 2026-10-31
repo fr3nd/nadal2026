@@ -18,9 +18,9 @@ export const CONFIG = {
   graceSeconds: 0,       // no obstacles at all during the first seconds
   rowGapStart: 0.95,    // seconds between rows of things (easy)
   rowGapEnd: 0.52,      // ... (hard); keep >= ~0.5 so a lane change is always possible
-  obstacleChanceStart: 0.5,    // chance a row has obstacles
-  obstacleChanceEnd: 0.9,
-  doubleObstacleChanceEnd: 0.6, // chance a row has 2 obstacles (never 3)
+  obstacleChanceStart: 0.65,   // chance a row has obstacles
+  obstacleChanceEnd: 1.0,
+  doubleObstacleChanceEnd: 0.75, // chance a row has 2 obstacles (never 3)
 
   // --- Items ---------------------------------------------------------------
   giftChanceOnObstacleRow: 0.5, // gift next to obstacles, on the safe path
