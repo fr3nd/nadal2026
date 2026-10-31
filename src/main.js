@@ -5,6 +5,7 @@ import { createUI } from './ui.js';
 import { setupInput } from './input.js';
 import { initLang, t, onLangChange } from './i18n.js';
 import { store } from './storage.js';
+import { CONFIG } from './config.js';
 import * as scores from './scores.js';
 
 initLang();
@@ -13,6 +14,7 @@ const canvas = document.getElementById('game');
 const game = new Game();
 const renderer = new Renderer(canvas);
 const audio = new AudioEngine();
+audio.sadVariant = Number(new URLSearchParams(location.search).get('sad')) || CONFIG.sadSound; // ?sad=N to try the options
 const ui = createUI(renderer.sprites, audio);
 
 let best = store.get('best', 0);

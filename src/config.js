@@ -33,6 +33,7 @@ export const CONFIG = {
   starSeconds: 6,
 
   // --- Hit (one hit = game over, unless the star is active) ---
+  sadSound: 1,           // sound when Kai hits something: 1-7 (see SAD_VARIANTS in audio.js; try ?sad=N)
   hitShakeSeconds: 0.4,
   dyingStopSeconds: 0.7, // pause once stopped, before the game over screen
 
