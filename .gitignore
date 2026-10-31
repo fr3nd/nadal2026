@@ -3,3 +3,6 @@ dist/
 .DS_Store
 *.log
 .env*
+
+# clasp: local link to your Apps Script project (see README)
+.clasp.json

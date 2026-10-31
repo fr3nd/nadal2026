@@ -89,6 +89,22 @@ test('names are cleaned: length, control chars, HTML, formulas', () => {
   assert.equal(rows.length, 3); // header + 2 rows: the blank name was refused
 });
 
+test('rank is found even for names that start with a formula character', () => {
+  const { ctx, rows } = makeEnv();
+  // like real Sheets, reading a cell hides the protective leading apostrophe
+  const real = rows.push.bind(rows);
+  rows.push = (r) => real(r);
+  const t0 = 1_000_000_000_000;
+  const { token } = at(ctx, t0, () => get(ctx, 'start'));
+  const origGetRange = ctx.SpreadsheetApp.getActiveSpreadsheet().getSheets()[0].getRange;
+  ctx.SpreadsheetApp.getActiveSpreadsheet().getSheets()[0].getRange = (r, c, n, m) => ({
+    getValues: () => origGetRange(r, c, n, m).getValues().map(([name, score]) => [String(name).replace(/^'/, ''), score]),
+  });
+  const r = at(ctx, t0 + 60_000, () => post(ctx, { token, name: '=cool', gifts: 5, meters: 100 }));
+  assert.equal(r.ok, true);
+  assert.equal(r.rank, 1);
+});
+
 test('the table is sorted, limited to 20, ties keep the earlier entry first', () => {
   const { ctx } = makeEnv();
   const t0 = 1_000_000_000_000;

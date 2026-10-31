@@ -3,7 +3,7 @@
 export const CONFIG = {
   // --- High scores (see apps-script/ and the README). Leave empty to disable the
   // shared table: the game then only keeps each device's own best score.
-  scoresUrl: '',
+  scoresUrl: 'https://script.google.com/macros/s/AKfycbxFibvAdHm7dmCqUSp2EPF8t0qye-H_Y5fuz2c46WN0Z7sK0mb8F5iCX8rRW8dzIcKF/exec',
   scoresTimeoutMs: 8000,
   scoresTop: 20,
 

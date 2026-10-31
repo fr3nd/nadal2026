@@ -4,9 +4,9 @@
 //   GET  ?action=top    -> { top }          the current top 20
 //   POST (text/plain JSON) { token, name, gifts, meters } -> { ok, rank, top }
 //
-// The scores live in a private Google Sheet that this script creates on first
-// use (it is never shared). The signing key is generated on first use and kept
-// in the script properties, so nothing secret is in this file or in the repo.
+// The scores live in the private Google Sheet this script is bound to (never
+// shared). The signing key is generated on first use and kept in the script
+// properties, so nothing secret is in this file or in the repo.
 // Moderation: open the sheet and delete the rows you don't like.
 
 var CFG = {
@@ -69,7 +69,8 @@ function submit_(body, now) {
   var score = gifts * CFG.gift + meters;
   sheet_().appendRow([new Date(now), name, score, gifts, meters, Math.round(seconds), tok.id]);
   var top = topScores_();
-  var rank = rankOf_(top, name, score);
+  // Sheets hides the protective apostrophe when reading, so compare without it
+  var rank = rankOf_(top, name.replace(/^'(?=[=+\-@])/, ''), score);
   return { ok: true, rank: rank, top: top };
 }
 
@@ -89,6 +90,7 @@ function cleanName_(raw) {
     .replace(/[\u0000-\u001f\u007f<>]/g, '')
     .replace(/\s+/g, ' ')
     .trim()
+    .replace(/^'+/, '') // Sheets treats a leading apostrophe as its text marker
     .slice(0, CFG.nameMax)
     .trim();
   if (!s) return '';
@@ -152,21 +154,17 @@ function rateOk_(now) {
 
 // ----------------------------------------------------------------- sheet ----
 
+// The script is bound to the score spreadsheet, so it only ever needs access to
+// this one sheet (scope spreadsheets.currentonly), never to the rest of your Drive.
 function sheet_() {
-  var props = PropertiesService.getScriptProperties();
-  var id = props.getProperty('SHEET_ID');
-  var ss;
-  if (id) {
-    ss = SpreadsheetApp.openById(id);
-  } else {
-    ss = SpreadsheetApp.create("Kai's Sled - high scores");
-    props.setProperty('SHEET_ID', ss.getId());
-    var first = ss.getSheets()[0];
-    first.setName(CFG.sheetName);
-    first.appendRow(['date', 'name', 'score', 'gifts', 'meters', 'seconds', 'runId']);
-    first.setFrozenRows(1);
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sh = ss.getSheetByName(CFG.sheetName) || ss.getSheets()[0];
+  if (sh.getName() !== CFG.sheetName) sh.setName(CFG.sheetName);
+  if (sh.getLastRow() === 0) {
+    sh.appendRow(['date', 'name', 'score', 'gifts', 'meters', 'seconds', 'runId']);
+    sh.setFrozenRows(1);
   }
-  return ss.getSheetByName(CFG.sheetName) || ss.getSheets()[0];
+  return sh;
 }
 
 function topScores_() {
@@ -186,7 +184,7 @@ function json_(obj) {
   return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);
 }
 
-// Run once from the editor (or `clasp run`) to create the sheet and see its URL.
+// Run once from the editor to authorize the script and prepare the sheet.
 function setup() {
   var sh = sheet_();
   secret_();

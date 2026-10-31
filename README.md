@@ -47,31 +47,30 @@ language and mute choice are stored on the device (localStorage) only.
 
 ## High scores (Google Sheet + Apps Script)
 
-The shared top-20 table lives in a private Google Sheet, behind a small Apps Script web app
-(`apps-script/Code.gs`). It needs no server and no secrets in this repo.
+The shared top-20 table lives in a private Google Sheet ("Kai's Sled - high scores"), behind a small
+Apps Script web app bound to it (`apps-script/Code.gs`). No server, and no secrets in this repo. The
+script only asks Google for `spreadsheets.currentonly`: access to that one sheet, nothing else.
 
 - A run asks the script for a signed, single-use token when it starts. The score is only accepted
   with that token, and the script checks it against the time *it* measured, plus plausibility
   limits, so scores can't be submitted without playing or replayed. Names are cleaned (length,
   control characters, spreadsheet formulas). It can't stop someone who really plays and sends
   slightly inflated numbers; that is accepted for a family card.
-- To moderate, open the sheet (it is created in the Google account that deployed the script,
-  called "Kai's Sled - high scores") and delete rows.
+- To moderate, open the sheet in your Google Drive and delete rows.
 - If `scoresUrl` in `src/config.js` is empty, the game works without the shared table.
 
-Deploy or update the script with [clasp](https://github.com/google/clasp):
+Update the script with [clasp](https://github.com/google/clasp) (`.clasp.json` is local and not committed;
+get the script id from the sheet's Extensions > Apps Script, then `npx @google/clasp clone <scriptId>`):
 
 ```sh
-npx @google/clasp login                    # once, and enable the Apps Script API:
-                                           # https://script.google.com/home/usersettings
-npx @google/clasp push                     # upload apps-script/
-npx @google/clasp deploy                   # new version; the web app URL is
-                                           # https://script.google.com/macros/s/<deploymentId>/exec
+npx @google/clasp login
+npx @google/clasp push --force
+npx @google/clasp deploy --deploymentId <id> --description "what changed"   # keeps the same URL
 ```
 
-The first time, open the script (`npx @google/clasp open-script`), run `setup` and authorize it.
-Put the web app URL in `scoresUrl` (`src/config.js`). To update the script later, `push` and run
-`deploy --deploymentId <id>` so the URL stays the same.
+First-time setup was: `clasp create --type sheets --rootDir apps-script`, restore
+`apps-script/appsscript.json` (clasp overwrites it), `push`, `deploy`, then run `setup` once in the
+script editor and authorize. The web app URL (`.../exec`) goes in `scoresUrl`.
 
 Tests (no Google account needed): `node tests/apps-script.test.mjs` runs `Code.gs` against a mock.
 To try the game against a local fake table: `SEED=1 node tests/mock-scores-server.mjs`, then open

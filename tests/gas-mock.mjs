@@ -11,7 +11,7 @@ export function makeEnv() {
     getLastRow: () => rows.length,
     appendRow: (r) => rows.push(r),
     getRange: (r, c, n, m) => ({ getValues: () => rows.slice(r - 1, r - 1 + n).map((x) => x.slice(c - 1, c - 1 + m)) }),
-    setName() {}, setFrozenRows() {}, getParent: () => ({ getUrl: () => 'mock://sheet' }),
+    setName() {}, setFrozenRows() {}, getName: () => 'Scores', getParent: () => ({ getUrl: () => 'mock://sheet' }),
   };
   const ss = { getId: () => 'sheet1', getSheets: () => [sheet], getSheetByName: () => sheet, getUrl: () => 'mock://sheet' };
   const b64 = (buf) => Buffer.from(buf).toString('base64url');
@@ -28,7 +28,7 @@ export function makeEnv() {
     PropertiesService: { getScriptProperties: () => ({ getProperty: (k) => props[k] ?? null, setProperty: (k, v) => { props[k] = v; } }) },
     CacheService: { getScriptCache: () => ({ get: (k) => cache[k] ?? null, put: (k, v) => { cache[k] = v; } }) },
     LockService: { getScriptLock: () => ({ waitLock() {}, releaseLock() {} }) },
-    SpreadsheetApp: { create: () => ss, openById: () => ss },
+    SpreadsheetApp: { getActiveSpreadsheet: () => ss },
     ContentService: { createTextOutput: (s) => ({ s, setMimeType() { return this; } }), MimeType: { JSON: 'json' } },
     Logger: { log() {} },
   };
