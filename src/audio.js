@@ -2,7 +2,7 @@
 // (no audio files). "Jingle Bells" (J. L. Pierpont, 1857) is public domain.
 import { store } from './storage.js';
 
-const BPM = 190;
+const BPM = 230;
 const BEAT = 60 / BPM;
 const mtof = (m) => 440 * Math.pow(2, (m - 69) / 12);
 

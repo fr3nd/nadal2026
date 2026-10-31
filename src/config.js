@@ -9,10 +9,10 @@ export const CONFIG = {
   speedStart: 125,       // px/s at the start of a run
   speedMax: 290,        // px/s once fully ramped up
   rampSeconds: 45,      // time to go from easy to "hard but fair"
-  graceSeconds: 3,      // no obstacles at all during the first seconds
+  graceSeconds: 0,       // no obstacles at all during the first seconds
   rowGapStart: 0.95,    // seconds between rows of things (easy)
   rowGapEnd: 0.52,      // ... (hard); keep >= ~0.5 so a lane change is always possible
-  obstacleChanceStart: 0.35,   // chance a row has obstacles
+  obstacleChanceStart: 0.5,    // chance a row has obstacles
   obstacleChanceEnd: 0.9,
   doubleObstacleChanceEnd: 0.6, // chance a row has 2 obstacles (never 3)
 
