@@ -59,8 +59,10 @@ script only asks Google for `spreadsheets.currentonly`: access to that one sheet
 - To moderate, open the sheet in your Google Drive and delete rows.
 - If `scoresUrl` in `src/config.js` is empty, the game works without the shared table.
 
-Update the script with [clasp](https://github.com/google/clasp) (`.clasp.json` is local and not committed;
-get the script id from the sheet's Extensions > Apps Script, then `npx @google/clasp clone <scriptId>`):
+Update the script with [clasp](https://github.com/google/clasp). `.clasp.json` is local and not committed. On a new
+machine: `clasp login`, copy the Script ID (the sheet's Extensions > Apps Script > Project settings), run
+`npx @google/clasp clone <scriptId> --rootDir apps-script`, then `git checkout apps-script/` to keep the repo's
+version of the files (clone overwrites them). The deployment id is the part of `scoresUrl` between `/s/` and `/exec`.
 
 ```sh
 npx @google/clasp login
