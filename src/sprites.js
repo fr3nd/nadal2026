@@ -119,6 +119,25 @@ function arrow(dir) {
   return p;
 }
 
+// Language flags, shown cropped into round buttons. Add one per language in LANGS.
+function flagCA() { // senyera: 9 stripes
+  const p = new Pix(18, 9);
+  for (let y = 0; y < 9; y++) p.rect(0, y, 18, 1, y % 2 === 0 ? '#fcdd09' : '#da121a');
+  return p;
+}
+function flagEN() { // Union Jack
+  const p = new Pix(18, 12);
+  p.rect(0, 0, 18, 12, '#274796');
+  for (let i = 0; i < 18; i++) {
+    const y = Math.round((i * 11) / 17);
+    for (const dy of [-1, 0, 1]) { p.set(i, y + dy, '#ffffff'); p.set(17 - i, y + dy, '#ffffff'); }
+    p.set(i, y, '#c8102e'); p.set(17 - i, y, '#c8102e');
+  }
+  p.rect(7, 0, 4, 12, '#ffffff'); p.rect(0, 4, 18, 4, '#ffffff');
+  p.rect(8, 0, 2, 12, '#c8102e'); p.rect(0, 5, 18, 2, '#c8102e');
+  return p;
+}
+
 // Everything as Pix objects (no DOM) — handy for previews.
 export function buildPix() {
   const darkForest = { green: '#1f6b4c', snow: '#cfe0ff', trunk: '#5a3b2a' };
@@ -135,6 +154,8 @@ export function buildPix() {
     star: star(),
     forestPine: pine(darkForest),
     forestPineLight: pine({ green: '#2f8a5d', snow: '#e6f0ff', trunk: '#6a4630' }),
+    flag_en: flagEN(),
+    flag_ca: flagCA(),
     iconGift: gift(GIFT_COLORS[0]),
     iconSoundOn: fromRows(SPEAKER_ON, { W: '#fff3cf' }),
     iconSoundOff: fromRows(SPEAKER_OFF, { W: '#fff3cf', R: '#ff6b6b' }),

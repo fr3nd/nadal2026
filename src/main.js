@@ -16,7 +16,7 @@ const audio = new AudioEngine();
 const ui = createUI(renderer.sprites, audio);
 
 let best = store.get('best', 0);
-ui.init(best);
+ui.init();
 ui.setRecordsEnabled(scores.enabled());
 
 // ---- layout: a portrait play area drawn at ~130 logical px wide -----------
@@ -39,11 +39,10 @@ function layout() {
   // (and never under the score box, whatever its size)
   const hudBottom = ui.el.hud.querySelector('.hud-panel').getBoundingClientRect().bottom;
   const kaiY = Math.max(Math.floor(H * 0.2), Math.ceil(hudBottom / ps) + 30);
-  // title screen: Kai waits halfway between the last button and the language switch
+  // title screen: Kai waits halfway between the last button and the bottom of the screen
   const rect = (el) => el.getBoundingClientRect();
   const lastBtn = ui.el.recordsTitle.hidden ? document.getElementById('btn-play') : ui.el.recordsTitle;
-  const langTop = rect(ui.el.title.querySelector('.lang')).top;
-  const titleKaiY = ui.el.title.hidden ? undefined : Math.round((rect(lastBtn).bottom + 8 + langTop) / 2 / ps);
+  const titleKaiY = ui.el.title.hidden ? undefined : Math.round((rect(lastBtn).bottom + 8 + rect(ui.el.stage).height - 16) / 2 / ps);
   const geo = { W, H, laneW: LANE_W, roadW, roadLeft, kaiY, titleKaiY: titleKaiY || game.geo.titleKaiY };
   renderer.resize(geo);
   game.setGeometry(geo);
@@ -69,7 +68,6 @@ game.on('gameover', () => {
   const score = game.score();
   const record = score > best;
   if (record) { best = score; store.set('best', best); }
-  ui.setBest(best);
   ui.showOver({ gifts: game.gifts, meters: game.meters(), score, best, record });
   // made the shared table? then ask for a name
   if (scores.qualifies(score)) ui.askName(store.get('name', ''));

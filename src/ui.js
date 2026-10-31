@@ -1,5 +1,5 @@
 // DOM side of the game: screens, HUD, language switch, mute button.
-import { LANGS, getLang, setLang, onLangChange, t } from './i18n.js';
+import { LANGS, LANG_NAMES, getLang, setLang, onLangChange, t } from './i18n.js';
 import { toDataURL } from './sprites.js';
 import { CONFIG as C } from './config.js';
 
@@ -9,7 +9,7 @@ export function createUI(sprites, audio) {
   const el = {
     stage: $('stage'), hud: $('hud'), controls: $('controls'), title: $('title'), over: $('over'),
     gifts: $('hud-gifts'), meters: $('hud-m'), toast: $('toast'), mute: $('mute'),
-    titleBest: $('title-best'), record: $('record'),
+    langbar: $('langbar'), record: $('record'),
     board: $('board'), boardList: $('board-list'), boardBtn: $('btn-board'),
     nameForm: $('name-form'), nameInput: $('name-input'), btnSave: $('btn-save'), saveMsg: $('save-msg'),
     btnRetry: $('btn-retry'), recordsTitle: $('btn-records'), recordsOver: $('btn-records-over'),
@@ -24,24 +24,28 @@ export function createUI(sprites, audio) {
   el.padLeft.querySelector('img').src = toDataURL(sprites.arrowLeft);
   el.padRight.querySelector('img').src = toDataURL(sprites.arrowRight);
 
-  // language switch (built from LANGS, so new languages show up by themselves)
-  document.querySelectorAll('.lang').forEach((box) => {
-    LANGS.forEach((code, i) => {
-      if (i) {
-        const sep = document.createElement('span');
-        sep.textContent = '|';
-        box.appendChild(sep);
-      }
-      const b = document.createElement('button');
-      b.type = 'button';
-      b.dataset.lang = code;
-      b.textContent = code.toUpperCase();
-      b.addEventListener('click', () => setLang(code));
-      box.appendChild(b);
-    });
+  // language switch: one round flag button per language (built from LANGS)
+  LANGS.forEach((code) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'icon-btn lang-btn';
+    b.dataset.lang = code;
+    b.setAttribute('aria-label', LANG_NAMES[code] || code);
+    const flag = sprites[`flag_${code}`];
+    if (flag) {
+      const img = document.createElement('img');
+      img.alt = '';
+      img.src = toDataURL(flag);
+      b.appendChild(img);
+    } else {
+      b.textContent = code.toUpperCase(); // no flag drawn for this language yet
+    }
+    b.addEventListener('pointerdown', (e) => e.stopPropagation());
+    b.addEventListener('click', () => setLang(code));
+    el.langbar.appendChild(b);
   });
   const refreshLang = () => {
-    document.querySelectorAll('.lang button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.lang === getLang())));
+    document.querySelectorAll('.lang-btn').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.lang === getLang())));
     refreshMute();
   };
 
@@ -52,9 +56,7 @@ export function createUI(sprites, audio) {
   el.mute.addEventListener('pointerdown', (e) => e.stopPropagation());
   el.mute.addEventListener('click', () => { audio.unlock(); audio.toggleMute(); refreshMute(); });
 
-  let best = 0;
-  const refreshBest = () => { el.titleBest.textContent = best > 0 ? t('best', { n: best }) : ''; };
-  onLangChange(() => { refreshBest(); refreshLang(); });
+  onLangChange(() => refreshLang());
 
   let last = { gifts: -1, m: -1 };
   let recordsEnabled = false;
@@ -63,13 +65,10 @@ export function createUI(sprites, audio) {
     // callbacks, set by main.js
     onSaveName: null, onSkip: null, onBoardButton: null, onRecords: null,
     el,
-    init(bestScore) {
-      best = bestScore;
-      refreshBest();
+    init() {
       refreshLang();
       this.showTitle();
     },
-    setBest(b) { best = b; refreshBest(); },
     setRecordsEnabled(on) {
       recordsEnabled = on;
       el.recordsTitle.hidden = !on;
@@ -81,7 +80,7 @@ export function createUI(sprites, audio) {
       el.board.hidden = true;
       el.hud.classList.add('hidden');
       el.controls.classList.remove('active');
-      refreshBest();
+      el.langbar.hidden = false;
     },
     showGame() {
       el.title.hidden = true;
@@ -89,6 +88,7 @@ export function createUI(sprites, audio) {
       el.board.hidden = true;
       el.hud.classList.remove('hidden');
       el.controls.classList.add('active');
+      el.langbar.hidden = true; // not during play
       last = { gifts: -1, m: -1 };
     },
     showOver({ gifts, meters, score, best: b, record }) {
@@ -105,6 +105,7 @@ export function createUI(sprites, audio) {
       el.hud.classList.add('hidden');
       el.controls.classList.remove('active');
       el.over.hidden = false;
+      el.langbar.hidden = false;
       // brief lock so a panicked tap on the pads can't instantly restart
       el.over.classList.add('locked');
       setTimeout(() => el.over.classList.remove('locked'), 700);
@@ -139,6 +140,7 @@ export function createUI(sprites, audio) {
       el.title.hidden = true;
       el.over.hidden = true;
       el.board.hidden = false;
+      el.langbar.hidden = false;
       el.boardBtn.dataset.i18n = buttonKey;
       el.boardBtn.textContent = t(buttonKey);
       const list = el.boardList;

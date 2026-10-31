@@ -3,6 +3,7 @@
 import { store } from './storage.js';
 
 export const LANGS = ['en', 'ca'];
+export const LANG_NAMES = { en: 'English', ca: 'Català' }; // for screen readers
 
 export const STRINGS = {
   en: {
@@ -11,7 +12,6 @@ export const STRINGS = {
     subtitle: 'Merry Christmas 2026',
     hint: 'Swipe or tap the arrows to change lane. Collect gifts and dodge the obstacles!',
     play: 'Play',
-    best: 'Best: {n}',
     hoho: 'Ho ho ho!',
     gameOver: 'Game over',
     gifts: 'Gifts',
@@ -45,7 +45,6 @@ export const STRINGS = {
     subtitle: 'Bon Nadal 2026',
     hint: 'Llisca el dit o toca les fletxes per canviar de carril. Col·lecciona regals i esquiva els obstacles!',
     play: 'Juga',
-    best: 'Rècord: {n}',
     hoho: 'Ho ho ho!',
     gameOver: 'Fi de la partida',
     gifts: 'Regals',
