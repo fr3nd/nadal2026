@@ -25,7 +25,7 @@ const BASE = {
   sled: '#c9453a',
   sledTrim: '#ffd23f',
   runner: '#6b4a38',
-  eyeStyle: 'oval', // 'oval' | 'happy'
+  eyeStyle: 'oval', // 'oval' | 'happy' | 'excited'
   hatStyle: 'low', // 'low' = pulled over the forehead, 'back' = pushed back, more hair
 };
 
@@ -36,14 +36,18 @@ export const KAI_LOOK = {
   scarf: '#d93a48',
 };
 
-// Two eye looks: tall ovals normally, and happy closed arcs for a moment when
-// he grabs a gift ('happy'). Each draws both eyes.
+// Eye looks: tall ovals normally, happy closed arcs when he grabs a gift
+// ('happy'), and wide-open eyes + a big grin at "Super Speed!" ('excited').
 function paintEyes(p, ox, oy, style, L) {
   const D = L.eyes;
   const px = (x, y, c) => p.set(ox + x, oy + y, c);
   [[11, -1], [18, 1]].forEach(([x, side]) => { // side: -1 left eye, +1 right eye
     if (style === 'happy') {
       px(x, 15, D); px(x, 14, D); px(x + 1, 13, D); px(x + 2, 14, D); px(x + 2, 15, D);
+    } else if (style === 'excited') { // wide-open, extra tall eyes with a double shine
+      const ex = x + (side < 0 ? 0 : 1);
+      p.rect(ox + ex, oy + 12, 2, 5, D);
+      px(ex, 12, '#ffffff'); px(ex, 13, '#ffffff'); px(ex + 1, 15, lighten(D, 0.3));
     } else { // 'oval': tall bean-shaped eyes with a shine
       const ex = x + (side < 0 ? 0 : 1);
       p.rect(ox + ex, oy + 13, 2, 4, D);
@@ -125,11 +129,17 @@ export function drawKai(mode = 'normal', look = KAI_LOOK, eyeStyle = null) {
     p.rect(ox + 18, oy + 11, 4, 1, browC);
     p.set(ox + 14, oy + 11, L.skinDark); p.set(ox + 17, oy + 11, L.skinDark);
     paintEyes(p, ox, oy, L.eyeStyle, L);
-    // smile with teeth
-    p.rect(ox + 13, oy + 19, 6, 1, '#ffffff');
-    p.rect(ox + 14, oy + 20, 4, 1, '#b4535e');
-    p.set(ox + 12, oy + 19, '#9a3b4a');
-    p.set(ox + 19, oy + 19, '#9a3b4a');
+    if (L.eyeStyle === 'excited') { // big open grin
+      p.rect(ox + 12, oy + 19, 8, 1, '#ffffff');
+      p.rect(ox + 12, oy + 20, 8, 2, '#8f2a3a');
+      p.rect(ox + 14, oy + 21, 4, 1, '#e0707a');
+      p.set(ox + 11, oy + 19, '#9a3b4a'); p.set(ox + 20, oy + 19, '#9a3b4a');
+    } else { // smile with teeth
+      p.rect(ox + 13, oy + 19, 6, 1, '#ffffff');
+      p.rect(ox + 14, oy + 20, 4, 1, '#b4535e');
+      p.set(ox + 12, oy + 19, '#9a3b4a');
+      p.set(ox + 19, oy + 19, '#9a3b4a');
+    }
   }
   p.rect(ox + 15, oy + 17, 2, 1, L.skinDark); // nose
   p.rect(ox + 9, oy + 18, 2, 1, L.cheeks);   // cheeks

@@ -51,6 +51,8 @@ export class Game {
     this.speed = this.speed || DEMO_SPEED;
     this.starTime = 0;
     this.happyTime = 0;
+    this.excitedTime = 0;
+    this.superDone = false;
     this.shake = 0;
     this.flash = 0;
     this.deadTimer = 0;
@@ -152,10 +154,16 @@ export class Game {
 
     this.starTime = Math.max(0, this.starTime - dt);
     this.happyTime = Math.max(0, this.happyTime - dt);
+    this.excitedTime = Math.max(0, this.excitedTime - dt);
     this.shake = Math.max(0, this.shake - dt);
     this.flash = Math.max(0, this.flash - dt);
 
     if (playing) {
+      if (!this.superDone && this.time >= C.superSpeedSeconds) {
+        this.superDone = true;
+        this.excitedTime = C.excitedSeconds;
+        this.emit('superspeed');
+      }
       this.collide();
       if (this.meters() >= this.nextMilestone) {
         this.nextMilestone += C.milestoneEvery;

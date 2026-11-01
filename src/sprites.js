@@ -146,6 +146,8 @@ export function buildPix() {
     kaiHappy: drawKai('normal', undefined, 'happy'),
     kaiStar: drawKai('star'),
     kaiStarHappy: drawKai('star', undefined, 'happy'),
+    kaiExcited: drawKai('normal', undefined, 'excited'),
+    kaiStarExcited: drawKai('star', undefined, 'excited'),
     kaiHurt: drawKai('hurt'),
     pine: pine(),
     snowman: snowman(),

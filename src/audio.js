@@ -2,8 +2,8 @@
 // (no audio files). "Jingle Bells" (J. L. Pierpont, 1857) is public domain.
 import { store } from './storage.js';
 
-const BPM = 230;
-const BEAT = 60 / BPM;
+export const BASE_BPM = 230;
+export const SUPER_BPM = 295; // tempo after "Super Speed!"
 const mtof = (m) => 440 * Math.pow(2, (m - 69) / 12);
 
 // [midi note, beats] — chorus twice (16 bars), key of C.
@@ -47,6 +47,7 @@ export class AudioEngine {
     this.timer = null;
     this.unlocked = false;
     this.onMuteChange = null;
+    this.bpm = BASE_BPM;
   }
 
   // Must be called from a user gesture (tap / key).
@@ -93,13 +94,27 @@ export class AudioEngine {
     this.cut(this.sadGain); // a new run silences the sad song
     this.musicOn = true;
     this.idx = 0;
+    this.loopIndex = 0;
+    this.bpm = BASE_BPM;
     // a fresh gain node per run, so stopMusic() can cut every scheduled note at once
     this.musicGain = this.ctx.createGain();
     this.musicGain.gain.value = 0.55;
     this.musicGain.connect(this.master);
-    this.loopStart = this.ctx.currentTime + 0.1;
+    // tempo-proof timeline: beat B plays at anchorTime + (B - anchorBeat) * secondsPerBeat
+    this.anchorTime = this.ctx.currentTime + 0.1;
+    this.anchorBeat = 0;
     this.timer = setInterval(() => this.schedule(), 40);
     this.schedule();
+  }
+
+  // Change the tempo while playing, without a jump in the song.
+  setTempo(bpm) {
+    if (this.ctx && this.musicOn) {
+      const now = this.ctx.currentTime;
+      this.anchorBeat += Math.max(0, now - this.anchorTime) / (60 / this.bpm);
+      this.anchorTime = Math.max(now, this.anchorTime);
+    }
+    this.bpm = bpm;
   }
 
   // Immediate stop: notes are scheduled slightly ahead, so we disconnect them all.
@@ -125,13 +140,14 @@ export class AudioEngine {
     const horizon = ctx.currentTime + 0.25;
     for (;;) {
       const e = SONG.events[this.idx];
-      const when = this.loopStart + e.beat * BEAT;
+      const beat = this.loopIndex * SONG.total + e.beat;
+      const when = this.anchorTime + (beat - this.anchorBeat) * (60 / this.bpm);
       if (when > horizon) break;
       if (when > ctx.currentTime - 0.05) this.note(e, Math.max(when, ctx.currentTime));
       this.idx++;
       if (this.idx >= SONG.events.length) {
         this.idx = 0;
-        this.loopStart += SONG.total * BEAT;
+        this.loopIndex++;
       }
     }
   }
@@ -144,7 +160,7 @@ export class AudioEngine {
     o.type = lead ? 'square' : 'triangle';
     o.frequency.value = mtof(lead ? e.midi + 12 : e.midi);
     const peak = lead ? 0.1 : 0.2;
-    const dur = Math.max(0.06, e.dur * BEAT * (lead ? 0.92 : 1));
+    const dur = Math.max(0.06, e.dur * (60 / this.bpm) * (lead ? 0.92 : 1));
     g.gain.setValueAtTime(0.0001, when);
     g.gain.linearRampToValueAtTime(peak, when + 0.01);
     g.gain.setValueAtTime(peak * 0.8, when + dur * 0.6);
@@ -273,6 +289,11 @@ export class AudioEngine {
         break;
       case 'hoho':
         [196, 196, 165].forEach((f, i) => this.tone('square', f, f * 0.97, 0.16, 0.16, i * 0.22));
+        break;
+      case 'superspeed': // rising arpeggio, a sweep and a whoosh
+        [523, 659, 784, 1047, 1319, 1568, 2093].forEach((f, i) => this.tone('square', f, f, 0.1, 0.1, i * 0.045));
+        this.tone('sawtooth', 120, 900, 0.5, 0.1);
+        this.noise(0.7, 0.2, 'highpass', 1800, 0.05);
         break;
       case 'sad':
         this.sadSong();

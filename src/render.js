@@ -197,7 +197,9 @@ export class Renderer {
     const ending = star && game.starTime < 1.5;
     const gold = star && (ending ? Math.floor(now * 12) % 2 === 0 : Math.floor(now * 8) % 4 !== 0);
     const happy = game.happyTime > 0;
-    let img = gold ? (happy ? S.kaiStarHappy : S.kaiStar) : (happy ? S.kaiHappy : S.kai);
+    const excited = game.excitedTime > 0;
+    const face = happy ? 'Happy' : excited ? 'Excited' : '';
+    let img = S[`${gold ? 'kaiStar' : 'kai'}${face}`];
     if (dead) img = S.kaiHurt;
     this.sprite(img, k.x, k.y);
 

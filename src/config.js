@@ -23,6 +23,10 @@ export const CONFIG = {
   obstacleChanceEnd: 1.0,
   doubleObstacleChanceEnd: 0.75, // chance a row has 2 obstacles (never 3)
 
+  // --- "Super Speed!" moment (message, sound, faster music, excited Kai) ---
+  superSpeedSeconds: 45,   // when it happens, in seconds into the run
+  excitedSeconds: 3,       // how long Kai looks thrilled
+
   // --- Items ---------------------------------------------------------------
   giftChanceOnObstacleRow: 0.5, // gift next to obstacles, on the safe path
   giftChanceBetweenRows: 0.8,   // gift in the gaps between rows

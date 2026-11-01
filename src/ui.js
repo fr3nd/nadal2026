@@ -8,7 +8,7 @@ const $ = (id) => document.getElementById(id);
 export function createUI(sprites, audio) {
   const el = {
     stage: $('stage'), hud: $('hud'), controls: $('controls'), title: $('title'), over: $('over'),
-    gifts: $('hud-gifts'), meters: $('hud-m'), toast: $('toast'), mute: $('mute'),
+    gifts: $('hud-gifts'), meters: $('hud-m'), toast: $('toast'), banner: $('banner'), mute: $('mute'),
     langbar: $('langbar'), record: $('record'),
     board: $('board'), boardList: $('board-list'), boardBtn: $('btn-board'),
     nameForm: $('name-form'), nameInput: $('name-input'), btnSave: $('btn-save'), saveMsg: $('save-msg'),
@@ -175,6 +175,13 @@ export function createUI(sprites, audio) {
       el.toast.classList.remove('show');
       void el.toast.offsetWidth;
       el.toast.classList.add('show');
+    },
+    // A slim message near the bottom (far from Kai) that doesn't hide the action.
+    banner(text) {
+      el.banner.textContent = text;
+      el.banner.classList.remove('show');
+      void el.banner.offsetWidth;
+      el.banner.classList.add('show');
     },
     // called every frame; only touches the DOM when something changed
     hud(game) {

@@ -385,3 +385,26 @@ h2 { font-size: calc(var(--u) * 13.4); margin-bottom: calc(var(--u) * 5); }
 #title .panel.hint { padding: calc(var(--u) * 3.2) calc(var(--u) * 4); margin-bottom: calc(var(--u) * 4); font-size: calc(var(--u) * 4.6); }
 #title .btn { margin-bottom: calc(var(--u) * 3.5); }
 #title .btn:not(.btn-alt) { padding-top: calc(var(--u) * 2.8); padding-bottom: calc(var(--u) * 2.8); }
+
+/* "Super Speed!": a slim line just above the buttons, far from Kai and the obstacles about to hit him */
+#banner {
+  position: absolute;
+  left: 0; right: 0;
+  bottom: calc(var(--safe-bottom) + max(64px, calc(var(--u) * 17)) + 26px);
+  text-align: center;
+  text-transform: uppercase;
+  font-size: calc(var(--u) * 6);
+  color: var(--gold);
+  text-shadow: var(--outline), 0 3px 0 var(--red-dark);
+  pointer-events: none;
+  opacity: 0;
+  z-index: 3;
+}
+#banner.show { animation: banner 2.2s steps(14) forwards; }
+@keyframes banner {
+  0% { opacity: 0; transform: scale(0.6); }
+  12% { opacity: 1; transform: scale(1.12); }
+  22% { transform: scale(1); }
+  80% { opacity: 1; }
+  100% { opacity: 0; }
+}

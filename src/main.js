@@ -1,6 +1,6 @@
 import { Game } from './game.js';
 import { Renderer } from './render.js';
-import { AudioEngine } from './audio.js';
+import { AudioEngine, SUPER_BPM } from './audio.js';
 import { createUI } from './ui.js';
 import { setupInput } from './input.js';
 import { initLang, t, onLangChange } from './i18n.js';
@@ -63,6 +63,11 @@ game.on('hit', () => {
   audio.sfx('sad'); // ...and the falling-notes sound plays
 });
 game.on('smash', () => audio.sfx('smash'));
+game.on('superspeed', () => {
+  ui.banner(t('superSpeed'));
+  audio.sfx('superspeed');
+  audio.setTempo(SUPER_BPM); // the music speeds up
+});
 game.on('milestone', () => { ui.toast(t('hoho')); audio.sfx('hoho'); });
 game.on('gameover', () => {
   const score = game.score();
