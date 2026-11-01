@@ -14,6 +14,7 @@ export class Game {
     this.flakes = [];
     this.scroll = 0;
     this.state = 'title'; // title | play | dying | over
+    this.god = false; // debug: Kai can't be hurt
     this.kai = { lane: 1, x: 0, y: 0, fromX: 0, toX: 0, slideT: 1, sliding: false, buffer: [] };
     this.resetRun();
     this.idleTimer = 0;
@@ -72,6 +73,22 @@ export class Game {
   toTitle() {
     this.resetRun();
     this.state = 'title';
+  }
+
+  // Debug: jump ahead in the current run (see README, "Previewing without playing").
+  skipTo({ seconds = 0, meters = 0 } = {}) {
+    if (seconds > 0) {
+      const tMax = (C.speedMax - C.speedStart) / C.speedAccel; // when the top speed is reached
+      const t = Math.min(seconds, tMax);
+      this.distance = C.speedStart * t + (C.speedAccel * t * t) / 2 + C.speedMax * (seconds - t);
+      this.time = seconds;
+      this.speed = this.baseSpeed();
+    }
+    if (meters > 0) this.distance = Math.max(this.distance, meters * C.pxPerMeter);
+    this.superDone = this.time >= C.superSpeedSeconds;
+    this.nextMilestone = (Math.floor(this.meters() / C.milestoneEvery) + 1) * C.milestoneEvery;
+    this.objects.length = 0;
+    this.spawner = new Spawner(this, this.geo.H * 0.6); // fresh rows for the new difficulty
   }
 
   meters() { return Math.floor(this.distance / C.pxPerMeter); }
@@ -229,7 +246,7 @@ export class Game {
           this.shake = Math.max(this.shake, 0.12);
           this.burst(o.x, o.y, o.type === 'rock' ? ['#8a94aa', '#5a6580', '#fbfdff'] : o.type === 'pine' ? ['#1f6b4a', '#134635', '#fbfdff'] : ['#fbfdff', '#a9bfe6', '#ff8c2a'], 16, 80);
           this.emit('smash');
-        } else {
+        } else if (!this.god) {
           this.hit();
         }
         break;

@@ -408,3 +408,6 @@ h2 { font-size: calc(var(--u) * 13.4); margin-bottom: calc(var(--u) * 5); }
   80% { opacity: 1; }
   100% { opacity: 0; }
 }
+
+#debugtag { position: absolute; left: 0; right: 0; bottom: calc(var(--safe-bottom) + 2px); text-align: center; font-size: 11px; color: #ffd23f; background: rgba(20, 24, 63, 0.8); padding: 2px 0; pointer-events: none; z-index: 6; }
+#debugtag[hidden] { display: none; }

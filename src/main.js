@@ -1,13 +1,21 @@
 import { Game } from './game.js';
 import { Renderer } from './render.js';
-import { AudioEngine, SUPER_BPM } from './audio.js';
+import { AudioEngine, BASE_BPM, SUPER_BPM } from './audio.js';
 import { createUI } from './ui.js';
 import { setupInput } from './input.js';
 import { initLang, t, onLangChange } from './i18n.js';
 import { store } from './storage.js';
+import { CONFIG } from './config.js';
 import * as scores from './scores.js';
 
 initLang();
+
+// Debug previews via the URL (README: "Previewing without playing"). While one is on,
+// nothing is saved or sent: no best score, no shared table.
+const q = new URLSearchParams(location.search);
+const num = (k) => (q.has(k) ? Number(q.get(k)) || 0 : 0);
+const debug = { seconds: num('t'), meters: num('m'), god: q.has('god'), over: q.has('over') };
+const debugOn = debug.seconds > 0 || debug.meters > 0 || debug.god || debug.over;
 
 const canvas = document.getElementById('game');
 const game = new Game();
@@ -21,6 +29,7 @@ ui.setRecordsEnabled(scores.enabled());
 
 // ---- layout: a portrait play area drawn at ~130 logical px wide -----------
 const LANE_W = 40;
+const CONFIG_SUPER = CONFIG.superSpeedSeconds;
 function layout() {
   const vw = window.innerWidth;
   const vh = window.innerHeight;
@@ -71,7 +80,7 @@ game.on('superspeed', () => {
 game.on('milestone', () => { ui.toast(t('hoho')); audio.sfx('hoho'); });
 game.on('gameover', () => {
   const score = game.score();
-  const record = score > best;
+  const record = score > best && !debugOn;
   if (record) { best = score; store.set('best', best); }
   ui.showOver({ gifts: game.gifts, meters: game.meters(), score, best, record });
   // made the shared table? then ask for a name
@@ -102,9 +111,15 @@ ui.onRecords = async (from) => {
 
 function start() {
   audio.unlock();
-  scores.startRun(); // background: gets this run's token and the current table
+  if (!debugOn) scores.startRun(); // background: gets this run's token and the current table
+  audio.setTempo(BASE_BPM);
   ui.showGame();
   game.startRun();
+  if (debugOn) {
+    game.god = debug.god;
+    game.skipTo({ seconds: debug.seconds, meters: debug.meters });
+    if (game.time >= CONFIG_SUPER) audio.setTempo(SUPER_BPM); // already past the Super Speed moment
+  }
   audio.startMusic();
 }
 
@@ -116,7 +131,7 @@ setupInput({
   padLeft: ui.el.padLeft,
   padRight: ui.el.padRight,
   onMove: (dir) => game.move(dir),
-  onGesture: () => { audio.unlock(); if (!audio.musicOn && game.state === 'title') audio.startMusic(); },
+  onGesture: () => { audio.unlock(); if (!audio.musicOn && (game.state === 'title' || game.state === 'play')) audio.startMusic(); },
   onConfirm: () => {
     if (game.state === 'title') start();
     else if (game.state === 'over' && ui.overVisible) start();
@@ -144,6 +159,13 @@ const fontReady = document.fonts && document.fonts.load ? document.fonts.load('1
 fontReady.catch(() => {}).then(() => {
   layout();
   requestAnimationFrame(frame);
+  if (debugOn) {
+    const tag = document.getElementById('debugtag');
+    tag.hidden = false;
+    tag.textContent = `DEBUG${debug.seconds ? ` t=${debug.seconds}s` : ''}${debug.meters ? ` m=${debug.meters}` : ''}${debug.god ? ' god' : ''}${debug.over ? ' over' : ''} · scores off`;
+    start(); // no need to press Play; the first tap anywhere turns the sound on
+    if (debug.over) setTimeout(() => { game.gifts = 12; game.hit(); }, 1500);
+  }
 });
 
 // Dev-only hook for debugging in the console (stripped from production builds).

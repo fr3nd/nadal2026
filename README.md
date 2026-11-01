@@ -13,6 +13,21 @@ npm install
 npm run dev        # http://localhost:5173 (also reachable from your phone on the same Wi-Fi)
 ```
 
+## Previewing without playing
+
+Add these to the game URL (dev server or the live site) to jump straight to a moment. The run starts by
+itself (tap once anywhere to turn the sound on). While any of them is on, **nothing is saved or sent**:
+no best score and no shared high-score table, so it can't be used to cheat.
+
+| URL | What you get |
+| --- | --- |
+| `?t=43` | start the run 43 s in (try `t=43` for "Super Speed!" at 45 s) |
+| `?m=240` | start at 240 m (the "Ho ho ho!" bonus line comes at 250 m) |
+| `?god` | Kai can't be hurt, so you can watch for as long as you like |
+| `?over` | a crash after 1.5 s, straight to the game over screen (and the hit sound) |
+
+They combine, e.g. `http://localhost:5173/?t=43&god`.
+
 ## Build and deploy
 
 ```sh

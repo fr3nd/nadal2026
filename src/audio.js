@@ -52,7 +52,10 @@ export class AudioEngine {
 
   // Must be called from a user gesture (tap / key).
   unlock() {
-    if (this.unlocked) return;
+    if (this.unlocked) { // a page that autostarted may still be waiting for a first tap
+      if (this.ctx.state === 'suspended' && !this.muted && !document.hidden) this.ctx.resume();
+      return;
+    }
     const AC = window.AudioContext || window.webkitAudioContext;
     if (!AC) return;
     // iOS: play through the "playback" channel so the silent switch doesn't mute us.
@@ -95,7 +98,6 @@ export class AudioEngine {
     this.musicOn = true;
     this.idx = 0;
     this.loopIndex = 0;
-    this.bpm = BASE_BPM;
     // a fresh gain node per run, so stopMusic() can cut every scheduled note at once
     this.musicGain = this.ctx.createGain();
     this.musicGain.gain.value = 0.55;
