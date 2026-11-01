@@ -302,6 +302,17 @@ export class Game {
         color: '#ffffff', size: 1, grav: 60,
       });
     }
+    // after "Super Speed!": long gold and white streaks trailing behind the sled
+    // (they start under Kai's body and are drawn behind him, so they seem to stream out of the sled)
+    if (this.superDone && this.state === 'play') {
+      for (let i = 0; i < 3; i++) {
+        this.addParticle({
+          x: k.x + (Math.random() - 0.5) * 42, y: k.y + 4 - Math.random() * 8, vx: 0, vy: -this.speed, vmul: 1.7,
+          life: 0.4, color: ['#ffd23f', '#ffffff', '#fff2a8', '#ffb92e'][Math.floor(Math.random() * 4)],
+          size: Math.random() < 0.35 ? 2 : 1, h: 16 + Math.floor(Math.random() * 22), grav: 0, follow: true,
+        });
+      }
+    }
     if (this.starTime > 0 && Math.random() < 0.6) {
       this.addParticle({
         x: k.x + (Math.random() - 0.5) * 30, y: k.y + (Math.random() - 0.5) * 36, vx: 0, vy: 10, life: 0.4,
@@ -317,7 +328,7 @@ export class Game {
       p.y += p.vy * dt;
       p.vy += p.grav * dt;
       // trail dots are glued to the hill, so they follow the current speed
-      if (p.follow) p.vy = -this.speed;
+      if (p.follow) p.vy = -this.speed * (p.vmul || 1);
     }
     this.particles = this.particles.filter((p) => p.life > 0);
   }

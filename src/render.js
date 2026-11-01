@@ -172,7 +172,7 @@ export class Renderer {
     const g = this.ctx;
     g.globalAlpha = Math.min(1, (p.life / p.max) * 1.6);
     g.fillStyle = p.color;
-    g.fillRect(Math.round(p.x), Math.round(p.y), p.size, p.size);
+    g.fillRect(Math.round(p.x), Math.round(p.y), p.size, p.h || p.size);
     g.globalAlpha = 1;
   }
 

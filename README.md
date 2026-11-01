@@ -15,9 +15,10 @@ npm run dev        # http://localhost:5173 (also reachable from your phone on th
 
 ## Previewing without playing
 
-Add these to the game URL (dev server or the live site) to jump straight to a moment. The run starts by
-itself (tap once anywhere to turn the sound on). While any of them is on, **nothing is saved or sent**:
-no best score and no shared high-score table, so it can't be used to cheat.
+Add these to the game URL (dev server on localhost) to jump straight to a moment. The run starts by
+itself (tap once anywhere to turn the sound on). **They only work on localhost** (`localhost`, `127.0.0.1`;
+see `src/debug.js`): on the online game, and on any other address, the parameters are ignored. While one
+is on, nothing is saved or sent: no best score and no shared high-score table.
 
 | URL | What you get |
 | --- | --- |

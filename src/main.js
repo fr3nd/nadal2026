@@ -6,16 +6,15 @@ import { setupInput } from './input.js';
 import { initLang, t, onLangChange } from './i18n.js';
 import { store } from './storage.js';
 import { CONFIG } from './config.js';
+import { readDebug } from './debug.js';
 import * as scores from './scores.js';
 
 initLang();
 
-// Debug previews via the URL (README: "Previewing without playing"). While one is on,
+// Debug previews via the URL, only on localhost (see src/debug.js). While one is on,
 // nothing is saved or sent: no best score, no shared table.
-const q = new URLSearchParams(location.search);
-const num = (k) => (q.has(k) ? Number(q.get(k)) || 0 : 0);
-const debug = { seconds: num('t'), meters: num('m'), god: q.has('god'), over: q.has('over') };
-const debugOn = debug.seconds > 0 || debug.meters > 0 || debug.god || debug.over;
+const debug = readDebug(location.search, location.hostname);
+const debugOn = debug.on;
 
 const canvas = document.getElementById('game');
 const game = new Game();
