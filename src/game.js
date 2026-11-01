@@ -75,7 +75,8 @@ export class Game {
   meters() { return Math.floor(this.distance / C.pxPerMeter); }
   score() { return this.gifts * C.giftPoints + this.meters(); }
   difficulty() { return clamp(this.time / C.rampSeconds, 0, 1); }
-  baseSpeed() { return lerp(C.speedStart, C.speedMax, this.difficulty()); }
+  // same climb as before (speedAccel), but it continues up to speedMax instead of stopping at 45 s
+  baseSpeed() { return Math.min(C.speedMax, C.speedStart + C.speedAccel * this.time); }
 
   // ---- input -----------------------------------------------------------
   move(dir) {
