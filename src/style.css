@@ -386,28 +386,18 @@ h2 { font-size: calc(var(--u) * 13.4); margin-bottom: calc(var(--u) * 5); }
 #title .btn { margin-bottom: calc(var(--u) * 3.5); }
 #title .btn:not(.btn-alt) { padding-top: calc(var(--u) * 2.8); padding-bottom: calc(var(--u) * 2.8); }
 
-/* "Super Speed!": a slim line just above the buttons, far from Kai and the obstacles about to hit him */
+/* "Super Speed!": same look and pop-in as "Ho ho ho!" (#toast), a bit lower so the two never overlap */
 #banner {
   position: absolute;
   left: 0; right: 0;
-  bottom: calc(var(--safe-bottom) + max(64px, calc(var(--u) * 17)) + 26px);
+  top: 48%;
   text-align: center;
-  text-transform: uppercase;
-  font-size: calc(var(--u) * 6);
+  white-space: nowrap;
+  font-size: calc(var(--u) * 10);
   color: var(--gold);
-  text-shadow: var(--outline), 0 3px 0 var(--red-dark);
+  text-shadow: 3px 3px 0 var(--red-dark), 0 0 0 var(--ink), var(--outline);
   pointer-events: none;
   opacity: 0;
   z-index: 3;
 }
-#banner.show { animation: banner 2.2s steps(14) forwards; }
-@keyframes banner {
-  0% { opacity: 0; transform: scale(0.6); }
-  12% { opacity: 1; transform: scale(1.12); }
-  22% { transform: scale(1); }
-  80% { opacity: 1; }
-  100% { opacity: 0; }
-}
-
-#debugtag { position: absolute; left: 0; right: 0; bottom: calc(var(--safe-bottom) + 2px); text-align: center; font-size: 11px; color: #ffd23f; background: rgba(20, 24, 63, 0.8); padding: 2px 0; pointer-events: none; z-index: 6; }
-#debugtag[hidden] { display: none; }
+#banner.show { animation: pop 1.5s steps(12) forwards; }
