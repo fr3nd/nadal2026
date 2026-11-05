@@ -169,7 +169,9 @@ export class Game {
     }
     this.objects = this.objects.filter((o) => o.y > -40 && !o.dead);
 
+    const hadStar = this.starTime > 0;
     this.starTime = Math.max(0, this.starTime - dt);
+    if (hadStar && this.starTime === 0) this.emit('starend');
     this.happyTime = Math.max(0, this.happyTime - dt);
     this.excitedTime = Math.max(0, this.excitedTime - dt);
     this.shake = Math.max(0, this.shake - dt);

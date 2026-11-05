@@ -64,7 +64,8 @@ window.addEventListener('resize', () => {
 
 // ---- game events -----------------------------------------------------------
 game.on('gift', () => audio.sfx('gift'));
-game.on('star', () => audio.sfx('star'));
+game.on('star', () => { audio.sfx('star'); audio.setStarMusic(true); }); // energetic music while invincible
+game.on('starend', () => audio.setStarMusic(false));
 game.on('hit', () => {
   audio.stopMusic(); // the music cuts off immediately...
   audio.sfx('hit');
@@ -112,10 +113,12 @@ function start() {
   audio.unlock();
   if (!debugOn) scores.startRun(); // background: gets this run's token and the current table
   audio.setTempo(BASE_BPM);
+  audio.setStarMusic(false);
   ui.showGame();
   game.startRun();
   if (debugOn) {
     game.god = debug.god;
+    if (debug.star) { game.starTime = 60; audio.setStarMusic(true); } // preview the star music
     game.skipTo({ seconds: debug.seconds, meters: debug.meters });
     if (game.time >= CONFIG_SUPER) audio.setTempo(SUPER_BPM); // already past the Super Speed moment
   }
@@ -161,11 +164,11 @@ fontReady.catch(() => {}).then(() => {
   if (debugOn) {
     const tag = document.getElementById('debugtag');
     tag.hidden = false;
-    tag.textContent = `DEBUG${debug.seconds ? ` t=${debug.seconds}s` : ''}${debug.meters ? ` m=${debug.meters}` : ''}${debug.god ? ' god' : ''}${debug.over ? ' over' : ''} · scores off`;
+    tag.textContent = `DEBUG${debug.seconds ? ` t=${debug.seconds}s` : ''}${debug.meters ? ` m=${debug.meters}` : ''}${debug.god ? ' god' : ''}${debug.star ? ' star' : ''}${debug.over ? ' over' : ''} · scores off`;
     start(); // no need to press Play; the first tap anywhere turns the sound on
     if (debug.over) setTimeout(() => { game.gifts = 12; game.hit(); }, 1500);
   }
 });
 
 // Dev-only hook for debugging in the console (stripped from production builds).
-if (import.meta.env.DEV) window.__kai = { game, renderer, start };
+if (import.meta.env.DEV) window.__kai = { game, renderer, start, audio };

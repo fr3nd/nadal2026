@@ -39,6 +39,35 @@ function buildEvents() {
 }
 const SONG = buildEvents();
 
+// The "invincible" music while Kai has the star: an original, fast, pumping tune (arpeggios
+// bouncing between octaves, a driving bass and a drum beat). Key of A minor, 8 bars, 172 BPM.
+export const STAR_BPM = 172;
+function buildStarSong() {
+  const ev = [];
+  const chords = [[69, 72, 76], [65, 69, 72], [60, 64, 67], [67, 71, 74], [69, 72, 76], [65, 69, 72], [67, 71, 74], [64, 68, 71]]; // Am F C G Am F G E
+  const roots = [45, 41, 36 + 12, 43, 45, 41, 43, 40];
+  const fills = { // bars 4 and 8: fast 16th-note runs
+    3: [67, 71, 74, 79, 83, 86, 83, 79, 74, 71, 67, 71, 74, 79, 83, 79],
+    7: [76, 80, 83, 88, 83, 80, 76, 71, 76, 80, 83, 88, 92, 88, 83, 80],
+  };
+  chords.forEach((ch, bar) => {
+    const b0 = bar * 4;
+    if (fills[bar]) {
+      fills[bar].forEach((m, i) => ev.push({ beat: b0 + i * 0.25, midi: m, dur: 0.25, voice: 'pump' }));
+    } else {
+      const hi = ch[0] + 12;
+      [ch[0], hi, ch[1], hi, ch[2], hi, ch[1], hi].forEach((m, i) => ev.push({ beat: b0 + i * 0.5, midi: m, dur: 0.5, voice: 'pump' }));
+    }
+    [0, 12, 0, 12, 0, 12, 7, 12].forEach((o, i) => ev.push({ beat: b0 + i * 0.5, midi: roots[bar] + o, dur: 0.5, voice: 'sbass' }));
+    for (let i = 0; i < 8; i++) ev.push({ beat: b0 + i * 0.5, midi: 0, dur: 0.25, voice: 'hat', accent: i % 2 === 1 });
+    [0, 2].forEach((b) => ev.push({ beat: b0 + b, midi: 0, dur: 0.2, voice: 'kick' }));
+    [1, 3].forEach((b) => ev.push({ beat: b0 + b, midi: 0, dur: 0.2, voice: 'snare' }));
+  });
+  ev.sort((a, b) => a.beat - b.beat);
+  return { events: ev, total: 32 };
+}
+const STAR_SONG = buildStarSong();
+
 export class AudioEngine {
   constructor() {
     this.ctx = null;
@@ -48,6 +77,9 @@ export class AudioEngine {
     this.unlocked = false;
     this.onMuteChange = null;
     this.bpm = BASE_BPM;
+    this.mainBpm = BASE_BPM; // tempo of the main song (the star song has its own)
+    this.song = SONG;
+    this.starWanted = false;
   }
 
   // Must be called from a user gesture (tap / key).
@@ -91,6 +123,13 @@ export class AudioEngine {
   resume() { if (this.ctx && !this.muted) this.ctx.resume(); }
 
   // ---- music --------------------------------------------------------------
+  // A fresh gain node per song/run, so everything scheduled on it can be cut at once.
+  newMusicBus() {
+    this.musicGain = this.ctx.createGain();
+    this.musicGain.gain.value = 0.55;
+    this.musicGain.connect(this.master);
+  }
+
   startMusic() {
     this.wantMusic = true;
     if (!this.ctx || this.musicOn) return;
@@ -98,25 +137,58 @@ export class AudioEngine {
     this.musicOn = true;
     this.idx = 0;
     this.loopIndex = 0;
-    // a fresh gain node per run, so stopMusic() can cut every scheduled note at once
-    this.musicGain = this.ctx.createGain();
-    this.musicGain.gain.value = 0.55;
-    this.musicGain.connect(this.master);
+    this.newMusicBus();
     // tempo-proof timeline: beat B plays at anchorTime + (B - anchorBeat) * secondsPerBeat
     this.anchorTime = this.ctx.currentTime + 0.1;
     this.anchorBeat = 0;
+    this.song = this.starWanted ? STAR_SONG : SONG;
+    this.bpm = this.starWanted ? STAR_BPM : this.mainBpm;
     this.timer = setInterval(() => this.schedule(), 40);
     this.schedule();
   }
 
-  // Change the tempo while playing, without a jump in the song.
+  // Change the tempo of the main song while playing, without a jump.
   setTempo(bpm) {
+    this.mainBpm = bpm;
+    if (this.song !== SONG) return; // the star song keeps its own tempo; the main one picks this up later
     if (this.ctx && this.musicOn) {
       const now = this.ctx.currentTime;
       this.anchorBeat += Math.max(0, now - this.anchorTime) / (60 / this.bpm);
       this.anchorTime = Math.max(now, this.anchorTime);
     }
     this.bpm = bpm;
+  }
+
+  // Switch to the energetic star music, or back to the main song where it left off.
+  setStarMusic(on) {
+    this.starWanted = on;
+    if (!this.ctx || !this.musicOn) return; // startMusic() will pick it up
+    if (on === (this.song === STAR_SONG)) return;
+    const now = this.ctx.currentTime;
+    if (on) {
+      // remember where the main song was, to resume there afterwards
+      this.mainBeat = this.anchorBeat + Math.max(0, now - this.anchorTime) / (60 / this.bpm);
+      this.cut(this.musicGain);
+      this.newMusicBus();
+      this.song = STAR_SONG;
+      this.bpm = STAR_BPM;
+      this.idx = 0;
+      this.loopIndex = 0;
+      this.anchorBeat = 0;
+      this.anchorTime = now + 0.45; // after the pick-up jingle
+    } else {
+      this.cut(this.musicGain);
+      this.newMusicBus();
+      this.song = SONG;
+      this.bpm = this.mainBpm;
+      const beat = this.mainBeat || 0;
+      this.loopIndex = Math.floor(beat / SONG.total);
+      const within = beat - this.loopIndex * SONG.total;
+      this.idx = SONG.events.findIndex((e) => e.beat >= within);
+      if (this.idx < 0) { this.idx = 0; this.loopIndex++; }
+      this.anchorBeat = beat;
+      this.anchorTime = now + 0.12;
+    }
   }
 
   // Immediate stop: notes are scheduled slightly ahead, so we disconnect them all.
@@ -141,13 +213,14 @@ export class AudioEngine {
     const ctx = this.ctx;
     const horizon = ctx.currentTime + 0.25;
     for (;;) {
-      const e = SONG.events[this.idx];
-      const beat = this.loopIndex * SONG.total + e.beat;
+      const song = this.song;
+      const e = song.events[this.idx];
+      const beat = this.loopIndex * song.total + e.beat;
       const when = this.anchorTime + (beat - this.anchorBeat) * (60 / this.bpm);
       if (when > horizon) break;
       if (when > ctx.currentTime - 0.05) this.note(e, Math.max(when, ctx.currentTime));
       this.idx++;
-      if (this.idx >= SONG.events.length) {
+      if (this.idx >= song.events.length) {
         this.idx = 0;
         this.loopIndex++;
       }
@@ -156,13 +229,23 @@ export class AudioEngine {
 
   note(e, when) {
     const ctx = this.ctx;
+    const delay = Math.max(0, when - ctx.currentTime);
+    // drums of the star song
+    if (e.voice === 'kick') { this.tone('sine', 160, 45, 0.13, 0.55, delay, this.musicGain); return; }
+    if (e.voice === 'snare') {
+      this.noise(0.1, 0.25, 'bandpass', 1800, delay, this.musicGain);
+      this.tone('triangle', 200, 120, 0.07, 0.2, delay, this.musicGain);
+      return;
+    }
+    if (e.voice === 'hat') { this.noise(0.035, e.accent ? 0.1 : 0.05, 'highpass', 7500, delay, this.musicGain); return; }
     const o = ctx.createOscillator();
     const g = ctx.createGain();
     const lead = e.voice === 'lead';
-    o.type = lead ? 'square' : 'triangle';
+    const pump = e.voice === 'pump'; // star song lead: short, punchy square notes
+    o.type = lead || pump ? 'square' : 'triangle';
     o.frequency.value = mtof(lead ? e.midi + 12 : e.midi);
-    const peak = lead ? 0.1 : 0.2;
-    const dur = Math.max(0.06, e.dur * (60 / this.bpm) * (lead ? 0.92 : 1));
+    const peak = lead ? 0.1 : pump ? 0.085 : 0.2;
+    const dur = Math.max(0.05, e.dur * (60 / this.bpm) * (lead ? 0.92 : pump ? 0.78 : 1));
     g.gain.setValueAtTime(0.0001, when);
     g.gain.linearRampToValueAtTime(peak, when + 0.01);
     g.gain.setValueAtTime(peak * 0.8, when + dur * 0.6);
@@ -191,7 +274,7 @@ export class AudioEngine {
     o.stop(t + dur + 0.02);
   }
 
-  noise(dur, vol, filterType, freq, delay = 0) {
+  noise(dur, vol, filterType, freq, delay = 0, dest = null) {
     if (!this.ctx) return;
     const ctx = this.ctx;
     const t = ctx.currentTime + delay;
@@ -205,7 +288,7 @@ export class AudioEngine {
     g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
     s.connect(f);
     f.connect(g);
-    g.connect(this.master);
+    g.connect(dest || this.master);
     s.start(t);
     s.stop(t + dur + 0.02);
   }

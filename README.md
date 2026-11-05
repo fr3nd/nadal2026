@@ -26,6 +26,7 @@ is on, nothing is saved or sent: no best score and no shared high-score table.
 | `?m=240` | start at 240 m (the "Ho ho ho!" bonus line comes at 250 m) |
 | `?god` | Kai can't be hurt, so you can watch for as long as you like |
 | `?over` | a crash after 1.5 s, straight to the game over screen (and the hit sound) |
+| `?star` | start with the star active (60 s), to hear the energetic star music |
 
 They combine, e.g. `http://localhost:5173/?t=43&god`.
 
