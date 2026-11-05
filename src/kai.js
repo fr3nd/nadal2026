@@ -56,16 +56,47 @@ function paintEyes(p, ox, oy, style, L) {
   });
 }
 
+// ---- Santa hat animation ----------------------------------------------------
+// 'bounce': the pom-pom hops while riding. 'flutter': after "Super Speed!" the tip is
+// blown up and back by the speed. frame = which frame of the loop to draw.
+export const HAT_ANIMS = {
+  bounce: { frames: 4, fps: 8 },
+  flutter: { frames: 4, fps: 12 },
+};
+
+// The droopy tip and pom-pom, animated. (x, y) are relative to the sprite origin.
+function paintTip(p, ox, oy, L, hat) {
+  const style = hat && hat.style;
+  const f = hat ? hat.frame : 0;
+  const tip = (x, y) => p.blob(ox + x, oy + y, 4, 3, L.hat);
+  const pom = (x, y) => p.blob(ox + x, oy + y, 3, 3, L.hatTrim);
+  if (style === 'bounce') { // the pom-pom hops, the tip follows a little
+    const pomDy = [0, -2, -3, -1][f % 4];
+    const tipDy = [0, -1, -1, 0][f % 4];
+    tip(24, 3 + tipDy);
+    pom(29, 5 + pomDy);
+  } else if (style === 'flutter') { // blown up and back by the speed, flapping
+    const w = [0, 1, 0, -1][f % 4];
+    tip(24, 3);
+    p.blob(ox + 26.5, oy + 1.5 + w * 0.5, 3.5, 2.5, L.hat);
+    p.blob(ox + 29, oy - 0.5 + w, 3, 2.2, L.hat);
+    pom(31.5, -2.5 + w * 1.3);
+  } else { // no animation
+    tip(24, 3);
+    pom(29, 5);
+  }
+}
+
 // mode: 'normal' | 'star' (golden) | 'hurt' (ouch face)
-export function drawKai(mode = 'normal', look = KAI_LOOK, eyeStyle = null) {
+export function drawKai(mode = 'normal', look = KAI_LOOK, eyeStyle = null, hat = null) {
   const L = { ...look };
   if (eyeStyle) L.eyeStyle = eyeStyle;
   if (mode === 'star') {
     Object.assign(L, { hat: '#ffd23f', jacket: '#ffe88a', pants: '#ffb92e', scarf: '#ffffff', mittens: '#ffd23f', sled: '#ffd23f', sledTrim: '#ffffff' });
   }
   const back = L.hatStyle === 'back';
-  const p = new Pix(34, 46);
-  const ox = 1; const oy = 2; // room for the outline and the hat
+  const p = new Pix(38, 52);
+  const ox = 3; const oy = 5; // room for the outline and the animated hat
 
   // --- sled runners (curl up at the front) ---
   p.box(ox + 2, oy + 24, 4, 16, L.runner, { round: 1 });
@@ -153,8 +184,7 @@ export function drawKai(mode = 'normal', look = KAI_LOOK, eyeStyle = null) {
     p.blob(ox + 16, oy + 5.6, 10.5, 2.1, L.hatTrim, { dark: '#d9d3e6' });
   } else {
     p.blob(ox + 16, oy + 5.5, 9.5, 5, L.hat);
-    p.blob(ox + 24, oy + 3, 4, 3, L.hat);
-    p.blob(ox + 29, oy + 5, 3, 3, L.hatTrim);
+    paintTip(p, ox, oy, L, hat);
     p.blob(ox + 16, oy + 8, 10.5, 2.2, L.hatTrim, { dark: '#d9d3e6' });
   }
 

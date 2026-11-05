@@ -1,6 +1,7 @@
 // Draws the world on a small canvas (CSS scales it up with crisp pixels).
 // The hill scrolls UP the screen; Kai rides down it, near the top.
 import { COLORS, buildSprites } from './sprites.js';
+import { HAT_ANIMS } from './kai.js';
 
 const STRIP_H = 192; // height of the scrolling background tile
 
@@ -199,8 +200,11 @@ export class Renderer {
     const happy = game.happyTime > 0;
     const excited = game.excitedTime > 0;
     const face = happy ? 'Happy' : excited ? 'Excited' : '';
-    let img = S[`${gold ? 'kaiStar' : 'kai'}${face}`];
-    if (dead) img = S.kaiHurt;
+    // hat: pom-pom bounces normally; after "Super Speed!" the tip is blown back by the speed
+    const fast = game.superDone && game.state === 'play';
+    const frames = dead ? S.kaiHurt : S[`${gold ? 'kaiStar' : 'kai'}${face}${fast ? 'Fast' : ''}`];
+    const fps = fast ? HAT_ANIMS.flutter.fps : HAT_ANIMS.bounce.fps;
+    const img = frames[Math.floor(now * fps) % frames.length];
     this.sprite(img, k.x, k.y);
 
     if (dead) {

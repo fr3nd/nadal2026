@@ -1,7 +1,7 @@
 // All pixel art is painted from shapes (see pixart.js) in a "Minish Cap"
 // style: round chunky forms, 3-tone shading, colored outlines.
 import { Pix, fromRows, lighten, darken, mix } from './pixart.js';
-import { drawKai } from './kai.js';
+import { drawKai, HAT_ANIMS } from './kai.js';
 
 export const COLORS = {
   ink: '#14183f',
@@ -140,15 +140,20 @@ function flagEN() { // Union Jack
 
 // Everything as Pix objects (no DOM) — handy for previews.
 export function buildPix() {
+  // Kai: every face in two versions, each with its hat animation frames:
+  // bouncing pom-pom normally, wind-blown tip ("...Fast") after Super Speed!
+  const frames = (mode, eye, style) =>
+    Array.from({ length: HAT_ANIMS[style].frames }, (_, f) => drawKai(mode, undefined, eye, { style, frame: f }));
+  const kai = {};
+  [['kai', 'normal', null], ['kaiHappy', 'normal', 'happy'], ['kaiExcited', 'normal', 'excited'],
+    ['kaiStar', 'star', null], ['kaiStarHappy', 'star', 'happy'], ['kaiStarExcited', 'star', 'excited']].forEach(([key, mode, eye]) => {
+    kai[key] = frames(mode, eye, 'bounce');
+    kai[`${key}Fast`] = frames(mode, eye, 'flutter');
+  });
   const darkForest = { green: '#1f6b4c', snow: '#cfe0ff', trunk: '#5a3b2a' };
   return {
-    kai: drawKai('normal'),
-    kaiHappy: drawKai('normal', undefined, 'happy'),
-    kaiStar: drawKai('star'),
-    kaiStarHappy: drawKai('star', undefined, 'happy'),
-    kaiExcited: drawKai('normal', undefined, 'excited'),
-    kaiStarExcited: drawKai('star', undefined, 'excited'),
-    kaiHurt: drawKai('hurt'),
+    ...kai,
+    kaiHurt: [drawKai('hurt')],
     pine: pine(),
     snowman: snowman(),
     rock: rock(),
