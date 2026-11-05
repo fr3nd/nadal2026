@@ -1,6 +1,7 @@
 // Draws the world on a small canvas (CSS scales it up with crisp pixels).
 // The hill scrolls UP the screen; Kai rides down it, near the top.
-import { COLORS, buildSprites } from './sprites.js';
+import { COLORS, buildSprites, kaiSprite } from './sprites.js';
+import { CONFIG as C } from './config.js';
 import { HAT_ANIMS } from './kai.js';
 
 const STRIP_H = 192; // height of the scrolling background tile
@@ -177,6 +178,19 @@ export class Renderer {
     g.globalAlpha = 1;
   }
 
+  // Draws Kai. When bobbing, the rider (above the cut line) moves and the sled stays on the snow.
+  drawRider(img, x, y, bob) {
+    const g = this.ctx;
+    const w = img.width;
+    const h = img.height;
+    const dx = Math.round(x - w / 2);
+    const dy = Math.round(y - h / 2);
+    if (!bob) { g.drawImage(img, dx, dy); return; }
+    const cut = 34;
+    g.drawImage(img, 0, cut, w, h - cut, dx, dy + cut, w, h - cut); // sled, boots
+    g.drawImage(img, 0, 0, w, cut + 2, dx, dy + bob, w, cut + 2);    // rider (2 rows overlap, so no gap)
+  }
+
   kai(game, now) {
     const g = this.ctx;
     const k = game.kai;
@@ -202,10 +216,22 @@ export class Renderer {
     const face = happy ? 'Happy' : excited ? 'Excited' : '';
     // hat: pom-pom bounces normally; after "Super Speed!" the tip is blown back by the speed
     const fast = game.superDone && game.state === 'play';
-    const frames = dead ? S.kaiHurt : S[`${gold ? 'kaiStar' : 'kai'}${face}${fast ? 'Fast' : ''}`];
     const fps = fast ? HAT_ANIMS.flutter.fps : HAT_ANIMS.bounce.fps;
-    const img = frames[Math.floor(now * fps) % frames.length];
-    this.sprite(img, k.x, k.y);
+    const frame = Math.floor(now * fps) % 4;
+    const eye = happy ? 'happy' : excited ? 'excited' : null;
+    const extras = {};
+    let bob = 0;
+    if (!dead) {
+      // he bounces on the sled (the sled stays on the snow), and the boots kick
+      bob = [0, -1, -1, 0][Math.floor(now * 8) % 4];
+      // every few seconds he waves hello (time between waves: waveGapMin..waveGapMax in config.js)
+      const gap = () => C.waveGapMin + Math.random() * (C.waveGapMax - C.waveGapMin);
+      if (this.waveAt === undefined) this.waveAt = now + gap();
+      if (now >= this.waveAt + C.waveSeconds) this.waveAt = now + gap();
+      if (now >= this.waveAt) extras.arm = 1 + (Math.floor((now - this.waveAt) * 8) % 4);
+    }
+    const img = kaiSprite({ star: gold, eye, hurt: dead, style: fast ? 'flutter' : 'bounce', frame, extras });
+    this.drawRider(img, k.x, k.y, bob);
 
     if (dead) {
       // dizzy stars circling his head

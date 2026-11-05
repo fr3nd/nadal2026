@@ -27,6 +27,11 @@ export const CONFIG = {
   superSpeedSeconds: 45,   // when it happens, in seconds into the run
   excitedSeconds: 3,       // how long Kai looks thrilled
 
+  // --- Kai waves hello now and then ---
+  waveGapMin: 4,           // seconds between waves: a random time between min and max
+  waveGapMax: 8,
+  waveSeconds: 1.4,        // how long one wave lasts
+
   // --- Items ---------------------------------------------------------------
   giftChanceOnObstacleRow: 0.5, // gift next to obstacles, on the safe path
   giftChanceBetweenRows: 0.8,   // gift in the gaps between rows

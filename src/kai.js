@@ -88,7 +88,8 @@ function paintTip(p, ox, oy, L, hat) {
 }
 
 // mode: 'normal' | 'star' (golden) | 'hurt' (ouch face)
-export function drawKai(mode = 'normal', look = KAI_LOOK, eyeStyle = null, hat = null) {
+// extras: {arm: 1..4} raises the right arm and waves (frame of the wave)
+export function drawKai(mode = 'normal', look = KAI_LOOK, eyeStyle = null, hat = null, extras = {}) {
   const L = { ...look };
   if (eyeStyle) L.eyeStyle = eyeStyle;
   if (mode === 'star') {
@@ -111,15 +112,20 @@ export function drawKai(mode = 'normal', look = KAI_LOOK, eyeStyle = null, hat =
   // --- legs and boots (sticking out front) ---
   p.box(ox + 9, oy + 27, 6, 7, L.pants, { round: 2 });
   p.box(ox + 17, oy + 27, 6, 7, L.pants, { round: 2 });
-  p.box(ox + 8, oy + 33, 7, 5, L.boots, { round: 2 });
-  p.box(ox + 17, oy + 33, 7, 5, L.boots, { round: 2 });
+  const legF = (hat ? hat.frame : 0) % 4;
+  const lDy = [0, -1, 0, 1][legF]; // the boots kick, one after the other
+  const rDy = [0, 1, 0, -1][legF];
+  p.box(ox + 8, oy + 33 + lDy, 7, 5, L.boots, { round: 2 });
+  p.box(ox + 17, oy + 33 + rDy, 7, 5, L.boots, { round: 2 });
 
   // --- body (jacket / sweatshirt), arms and mittens holding the sled ---
   p.blob(ox + 16, oy + 24, 8, 6, L.jacket);
   p.blob(ox + 8, oy + 25, 3, 4, L.jacket);
-  p.blob(ox + 24, oy + 25, 3, 4, L.jacket);
   p.blob(ox + 6, oy + 29, 2.5, 2.5, L.mittens);
-  p.blob(ox + 26, oy + 29, 2.5, 2.5, L.mittens);
+  if (!extras.arm) { // (when waving, this arm is raised later, beside his head)
+    p.blob(ox + 24, oy + 25, 3, 4, L.jacket);
+    p.blob(ox + 26, oy + 29, 2.5, 2.5, L.mittens);
+  }
 
   // --- scarf / collar, with a tail flapping to one side ---
   p.box(ox + 20, oy + 21, 4, 8, L.scarf, { round: 1 });
@@ -175,6 +181,14 @@ export function drawKai(mode = 'normal', look = KAI_LOOK, eyeStyle = null, hat =
   p.rect(ox + 15, oy + 17, 2, 1, L.skinDark); // nose
   p.rect(ox + 9, oy + 18, 2, 1, L.cheeks);   // cheeks
   p.rect(ox + 22, oy + 18, 2, 1, L.cheeks);
+
+  // --- waving arm, raised beside his head ---
+  if (extras.arm) {
+    const w = [0, 2, 0, -2][(extras.arm - 1) % 4];
+    p.blob(ox + 26, oy + 22, 2.6, 3.6, L.jacket);
+    p.blob(ox + 28 + w * 0.4, oy + 17.5, 2.4, 3.4, L.jacket);
+    p.blob(ox + 28.5 + w, oy + 13, 2.8, 2.8, L.mittens);
+  }
 
   // --- hat: dome, droopy tip with pom-pom, fur band ---
   if (back) {
