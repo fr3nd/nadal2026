@@ -14,7 +14,7 @@ export const CONFIG = {
   pxPerMeter: 20,       // 20 logical px = 1 m
   speedStart: 125,       // px/s at the start of a run
   speedAccel: (290 - 125) / 45, // px/s gained per second: the same climb as before, now it keeps going
-  speedMax: 360,        // top speed (px/s), reached after ~64 s
+  speedMax: 400,        // top speed (px/s), reached after ~75 s
   rampSeconds: 45,      // time for obstacle density and row spacing to go from easy to "hard but fair"
   graceSeconds: 0,       // no obstacles at all during the first seconds
   rowGapStart: 0.95,    // seconds between rows of things (easy)

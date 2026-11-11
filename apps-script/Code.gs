@@ -15,7 +15,7 @@ var CFG = {
   tokenTtlMs: 30 * 60 * 1000,
   minSeconds: 8,            // a run shorter than this can't be submitted
   maxGiftsPerSecond: 3,     // generous upper bounds, see src/config.js
-  maxMetersPerSecond: 20,   // 360 px/s / 20 px per meter = 18 m/s at top speed, plus slack (src/config.js)
+  maxMetersPerSecond: 22,   // 400 px/s / 20 px per meter = 20 m/s at top speed, plus slack (src/config.js)
   maxScore: 100000,
   maxSubmitsPerMinute: 30,  // global flood limit (Apps Script can't see IPs)
   gift: 10,                 // points per gift: keep in sync with src/config.js
